@@ -8,7 +8,7 @@ class StringSerializer(serializers.StringRelatedField):
 
 
 class ItemSerializer(serializers.ModelSerializer):
-    category = serializers.SerializerMethodField()
+    genre = serializers.SerializerMethodField()
     label = serializers.SerializerMethodField()
 
     class Meta:
@@ -18,15 +18,15 @@ class ItemSerializer(serializers.ModelSerializer):
             'title',
             'price',
             'discount_price',
-            'category',
+            'genre',
             'label',
             'slug',
             'description',
             'image'
         )
 
-    def get_category(self, obj):
-        return obj.get_category_display()
+    def get_genre(self, obj):
+        return obj.get_genre_display()
 
     def get_label(self, obj):
         return obj.get_label_display()

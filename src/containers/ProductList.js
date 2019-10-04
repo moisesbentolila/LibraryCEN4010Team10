@@ -66,7 +66,7 @@ class ProductList extends React.Component {
                             <Item.Content>
                                 <Item.Header as='a'>{item.title}</Item.Header>
                                 <Item.Meta>
-                                    <span className='cinema'>{item.category}</span>
+                                    <span className='cinema'>{item.genre}</span>
                                 </Item.Meta>
                                 <Item.Description>{item.description}</Item.Description>
                                 <Item.Extra>
@@ -75,7 +75,7 @@ class ProductList extends React.Component {
                                     <Icon name='plus cart' />
                                     </Button>
                                     {item.discount_price && (<Label color=
-                                        {item.label === 'primary' ? "blue" : item.label === 'secondary' ?
+                                        {item.label === 'Fiction' ? "blue" : item.label === 'Non-Fiction' ?
                                             "green" : "olive"} >{item.label}</Label>)}
                                 </Item.Extra>
                             </Item.Content>
