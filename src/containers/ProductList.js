@@ -1,8 +1,10 @@
 import React from 'react'
 import axios from 'axios'
+import { connect } from 'react-redux'
 import { Button, Container, Dimmer, Icon, Image, Item, Label, Loader, Message, Segment } from 'semantic-ui-react'
 import { ProductListURL, addToCartURL } from '../constants'
 import { authAxios } from '../utils'
+import { fetchCart } from '../store/actions/cart'
 
 
 class ProductList extends React.Component {
@@ -27,10 +29,11 @@ class ProductList extends React.Component {
 
     handleAddToCart = slug => {
         this.setState({ loading: true })
-        authAxios.post(addToCartURL, { slug })
+        authAxios
+            .post(addToCartURL, { slug })
             .then(res => {
                 console.log(res.data)
-                // update cart count
+                this.props.fetchCart()
                 this.setState({ loading: false })
             })
             .catch(err => {
@@ -68,15 +71,18 @@ class ProductList extends React.Component {
                                 <Item.Meta>
                                     <span className='cinema'>{item.genre}</span>
                                 </Item.Meta>
+                                <Label color=
+                                    {item.label === 'Fiction' ? "blue" : item.label === 'Non-Fiction' ?
+                                        "red" : "olive"} >{item.label}
+                                </Label>
+                                {item.discount_price && (<Label color=
+                                    {"green"} >DISCOUNTED</Label>)}
                                 <Item.Description>{item.description}</Item.Description>
                                 <Item.Extra>
                                     <Button primary floated='right' icon labelPosition='right' onClick={() => this.handleAddToCart(item.slug)}>
                                         Add to cart
                                     <Icon name='plus cart' />
                                     </Button>
-                                    {item.discount_price && (<Label color=
-                                        {item.label === 'Fiction' ? "blue" : item.label === 'Non-Fiction' ?
-                                            "green" : "olive"} >{item.label}</Label>)}
                                 </Item.Extra>
                             </Item.Content>
                         </Item>)
@@ -87,4 +93,11 @@ class ProductList extends React.Component {
     }
 }
 
-export default ProductList
+const mapDispatchToProps = dispatch => {
+    return {
+        fetchCart: () => dispatch(fetchCart())
+    }
+
+}
+
+export default connect(null, mapDispatchToProps)(ProductList)
