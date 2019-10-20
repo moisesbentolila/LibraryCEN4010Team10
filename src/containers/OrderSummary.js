@@ -1,7 +1,9 @@
 import React from 'react'
 import { Button, Container, Header, Icon, Label, Menu, Table, Image } from 'semantic-ui-react'
 import { authAxios } from '../utils'
-import { orderSummaryURL } from '../constants'
+import { orderSummaryURL, orderItemDeleteURL, addToCartURL, orderItemUpdateQuantityURL } from '../constants'
+import { connect } from "react-redux";
+import { Link, Redirect } from "react-router-dom";
 
 class OrderSummary extends React.Component {
 
@@ -23,13 +25,65 @@ class OrderSummary extends React.Component {
                 this.setState({ data: res.data, loading: false })
             })
             .catch(err => {
+                if (err.response.status === 404) {
+                    this.setState({
+                        error: "You currently do not have an order",
+                        loading: false
+                    })
+                }
+                else {
+                    this.setState({ error: err, loading: false })
+                }
+            })
+    }
+
+    handleAddToCart = slug => {
+        this.setState({ loading: true })
+        authAxios
+            .post(addToCartURL, { slug })
+            .then(res => {
+                console.log(res.data)
+                this.handleFetchOrder()
+                this.setState({ loading: false })
+            })
+            .catch(err => {
                 this.setState({ error: err, loading: false })
+            })
+    }
+
+
+    handleRemoveQuantityFromCart = slug => {
+        authAxios
+            .post(orderItemUpdateQuantityURL, { slug })
+            .then(res => {
+                //callback
+                this.handleFetchOrder()
+            })
+            .catch(err => {
+                this.setState({ error: err })
+            })
+
+    }
+
+    handleRemoveItem = itemID => {
+        authAxios.delete(orderItemDeleteURL(itemID))
+            .then(res => {
+                //callback
+                this.handleFetchOrder()
+            })
+            .catch(err => {
+                this.setState({ error: err })
             })
     }
 
     render() {
         const { data, error, loading } = this.state
         console.log(data)
+        // redirects to login page if session times out
+        const { isAuthenticated } = this.props;
+        if (!isAuthenticated) {
+            return <Redirect to="/login" />;
+        }
 
         return (
             <Container>
@@ -48,25 +102,28 @@ class OrderSummary extends React.Component {
                     </Table.Header>
 
                     <Table.Body>
-                        {data.order_items.map((order_item, i) => {
+                        {data.order_items.map((orderItem, i) => {
                             return (
-                                <Table.Row key={order_item.id}>
+                                <Table.Row key={orderItem.id}>
                                     <Table.Cell>
                                         {i + 1}
                                     </Table.Cell>
                                     <Table.Cell>
-                                        {order_item.item}
-                                        <Image src={order_item.item_obj.image} />
+                                        {orderItem.item}
+                                        <Image size="tiny" src={`http://127.0.0.1:8000${orderItem.item_obj.image}`} />
                                     </Table.Cell>
                                     <Table.Cell>
-                                        ${order_item.item_obj.price}
+                                        {orderItem.item_obj.discount_price && <Label color='green' ribbon>DISCOUNT<br />PRICE<br />${orderItem.item_obj.discount_price}</Label>}<br />
+                                        ${orderItem.item_obj.price}
+                                    </Table.Cell>
+                                    <Table.Cell textAlign='center'>
+                                        <Icon name='minus' color='red' style={{ float: 'left', cursor: 'pointer' }} onClick={() => this.handleRemoveQuantityFromCart(orderItem.item_obj.slug)} ></Icon>
+                                        {orderItem.quantity}
+                                        <Icon name='plus' color='green' style={{ float: 'right', cursor: 'pointer' }} onClick={() => this.handleAddToCart(orderItem.item_obj.slug)}></Icon>
                                     </Table.Cell>
                                     <Table.Cell>
-                                        {order_item.quantity}
-                                    </Table.Cell>
-                                    <Table.Cell>
-                                        {order_item.item_obj.discount_price && <Label color='green' ribbon>DISCOUNT</Label>}
-                                        ${order_item.final_price}
+                                        ${orderItem.final_price}
+                                        <Icon name='trash' color='red' style={{ float: 'right', cursor: 'pointer' }} onClick={() => this.handleRemoveItem(orderItem.id)}></Icon>
                                     </Table.Cell>
                                 </Table.Row>
                             )
@@ -76,8 +133,8 @@ class OrderSummary extends React.Component {
                             <Table.Cell />
                             <Table.Cell />
                             <Table.Cell colSpan='2' textAlign='center'>
-                                <Label>
-                                    Total:
+                                <Label style={{ fontSize: "1.33em" }}>
+                                    Order Total:
                                     ${data.total}
                                 </Label>
                             </Table.Cell>
@@ -100,4 +157,11 @@ class OrderSummary extends React.Component {
     }
 }
 
-export default OrderSummary
+// redirects to login page if session times out
+const mapStateToProps = state => {
+    return {
+        isAuthenticated: state.auth.token !== null
+    }
+}
+
+export default connect(mapStateToProps)(OrderSummary);

@@ -8,7 +8,8 @@ import {
   Image,
   List,
   Menu,
-  Segment
+  Segment,
+  Icon
 } from "semantic-ui-react";
 import { Link, withRouter } from "react-router-dom";
 import { connect } from "react-redux";
@@ -29,42 +30,27 @@ class CustomLayout extends React.Component {
         <Menu inverted>
           <Container>
             <Link to="/">
-              <Menu.Item header>Home</Menu.Item>
+              <Menu.Item header style={{ fontSize: "1.5em" }}>Home</Menu.Item>
             </Link>
             <Link to="/products">
-              <Menu.Item header>Products</Menu.Item>
+              <Menu.Item header style={{ fontSize: "1.5em" }}>Products</Menu.Item>
             </Link>
             <Menu.Menu position='right'>
               {authenticated ? (
                 <React.Fragment>
-                  <Dropdown
-                    icon='cart'
-                    loading={loading}
-                    text={`${cart !== null ? cart.order_items.length : 0}`}
-                    pointing className='link item'>
-
-                    <Dropdown.Menu>
-                      {cart && cart.order_items.map(order_item => {
-                        return (
-                          <Dropdown.Item key={order_item.id}>
-                            {order_item.quantity} x {order_item.item}
-                          </Dropdown.Item>)
-                      })}
-                      {cart && cart.order_items.length < 1 ? (<Dropdown.Item>No items in cart</Dropdown.Item>) : null}
-                      <Dropdown.Divider />
-                      <Dropdown.Item icon='arrow right' text='Checkout' onClick={() => this.props.history.push('order-summary')} />
-                    </Dropdown.Menu>
-                  </Dropdown>
-                  <Menu.Item header onClick={() => this.props.logout()}>
+                  <Menu.Item onClick={() => this.props.history.push('order-summary')}>
+                    <Icon name='cart' size='large' />
+                  </Menu.Item>
+                  <Menu.Item header style={{ fontSize: "1.5em" }} onClick={() => this.props.logout()}>
                     Logout
                   </Menu.Item>
                 </React.Fragment>) : (
                   <React.Fragment>
                     <Link to="/login">
-                      <Menu.Item header>Login</Menu.Item>
+                      <Menu.Item header style={{ fontSize: "1.5em" }}>Login</Menu.Item>
                     </Link>
                     <Link to="/signup">
-                      <Menu.Item header>Signup</Menu.Item>
+                      <Menu.Item header style={{ fontSize: "1.5em" }}>Signup</Menu.Item>
                     </Link>
                   </React.Fragment>
                 )}

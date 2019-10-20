@@ -1,7 +1,7 @@
 import React from 'react'
 import axios from 'axios'
 import { connect } from 'react-redux'
-import { Button, Container, Dimmer, Icon, Image, Item, Label, Loader, Message, Segment } from 'semantic-ui-react'
+import { Button, Container, Dimmer, Icon, Image, Item, Label, Loader, Message, Segment, Accordion } from 'semantic-ui-react'
 import { ProductListURL, addToCartURL } from '../constants'
 import { authAxios } from '../utils'
 import { fetchCart } from '../store/actions/cart'
@@ -11,7 +11,16 @@ class ProductList extends React.Component {
     state = {
         loading: false,
         error: null,
-        data: []
+        data: [],
+        activeIndex: 0
+    }
+
+    handleClick = (e, titleProps) => {
+        const { index } = titleProps
+        const { activeIndex } = this.state
+        const newIndex = activeIndex === index ? -1 : index
+
+        this.setState({ activeIndex: newIndex })
     }
 
     componentDidMount() {
@@ -42,7 +51,7 @@ class ProductList extends React.Component {
     }
 
     render() {
-        const { data, error, loading } = this.state
+        const { data, error, loading, activeIndex } = this.state
         return (
             <Container>
                 {error && (
@@ -77,11 +86,27 @@ class ProductList extends React.Component {
                                 </Label>
                                 {item.discount_price && (<Label color=
                                     {"green"} >DISCOUNTED</Label>)}
-                                <Item.Description>{item.description}</Item.Description>
+                                <Item.Description>
+                                    <Accordion>
+                                        <Accordion.Title
+                                            active={activeIndex === item.id}
+                                            index={item.id}
+                                            onClick={this.handleClick}>
+                                            <Icon name='dropdown' />
+                                            Description
+                                    </Accordion.Title>
+                                        <Accordion.Content active={activeIndex === item.id}>
+                                            <p>
+                                                {item.description}
+                                            </p>
+                                        </Accordion.Content>
+                                    </Accordion>
+
+                                </Item.Description>
                                 <Item.Extra>
                                     <Button primary floated='right' icon labelPosition='right' onClick={() => this.handleAddToCart(item.slug)}>
-                                        Add to cart
-                                    <Icon name='plus cart' />
+                                        ${item.price}
+                                        <Icon name='plus cart' />
                                     </Button>
                                 </Item.Extra>
                             </Item.Content>
@@ -92,7 +117,7 @@ class ProductList extends React.Component {
         );
     }
 }
-
+// redirects to login page if session times out
 const mapDispatchToProps = dispatch => {
     return {
         fetchCart: () => dispatch(fetchCart())
