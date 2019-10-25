@@ -1,4 +1,4 @@
-import React from "react";
+import React, { createRef } from "react";
 import {
   Container,
   Divider,
@@ -9,7 +9,9 @@ import {
   List,
   Menu,
   Segment,
-  Icon
+  Icon,
+  Label,
+  Sticky
 } from "semantic-ui-react";
 import { Link, withRouter } from "react-router-dom";
 import { connect } from "react-redux";
@@ -18,6 +20,7 @@ import { fetchCart } from "../store/actions/cart";
 
 class CustomLayout extends React.Component {
 
+  contextRef = createRef()
   componentDidMount() {
     this.props.fetchCart()
   }
@@ -26,45 +29,54 @@ class CustomLayout extends React.Component {
     const { authenticated, cart, loading } = this.props
 
     return (
-      <div>
-        <Menu inverted>
-          <Container>
-            <Link to="/">
-              <Menu.Item header style={{ fontSize: "1.5em" }}>Home</Menu.Item>
-            </Link>
-            <Link to="/products">
-              <Menu.Item header style={{ fontSize: "1.5em" }}>Products</Menu.Item>
-            </Link>
-            <Menu.Menu position='right'>
-              {authenticated ? (
-                <React.Fragment>
-                  <Menu.Item onClick={() => this.props.history.push('order-summary')}>
-                    <Icon name='cart' size='large' />
-                  </Menu.Item>
-                  <Menu.Item header style={{ fontSize: "1.5em" }} onClick={() => this.props.logout()}>
-                    Logout
-                  </Menu.Item>
-                </React.Fragment>) : (
+      <div ref={this.contextRef}>
+        <Sticky context={this.contextRef}>
+          <Menu inverted>
+            <Container>
+              <Link to="/">
+                <Menu.Item header style={{ fontSize: "1.5em" }}>Home</Menu.Item>
+              </Link>
+              <Link to="/products">
+                <Menu.Item header style={{ fontSize: "1.5em" }}>Products</Menu.Item>
+              </Link>
+              <Menu.Menu position='right'>
+                {authenticated ? (
                   <React.Fragment>
-                    <Link to="/login">
-                      <Menu.Item header style={{ fontSize: "1.5em" }}>Login</Menu.Item>
-                    </Link>
-                    <Link to="/signup">
-                      <Menu.Item header style={{ fontSize: "1.5em" }}>Signup</Menu.Item>
-                    </Link>
-                  </React.Fragment>
-                )}
-            </Menu.Menu>
-          </Container>
-        </Menu>
+                    <Menu.Item
+                      loading={loading}
+                      onClick={() => this.props.history.push('order-summary')}>
+                      Cart
+                    <Icon.Group size='large'>
+                        <Icon name='cart' />
+                        {/* <Icon corner='top right' name='check' color='green' /> */}
+                      </Icon.Group>
+                      <Label color='green'>{cart != null ? cart.order_items.length : 0}</Label>
+                    </Menu.Item>
+                    <Menu.Item header style={{ fontSize: "1.5em" }} onClick={() => this.props.logout()}>
+                      Logout
+                  </Menu.Item>
+                  </React.Fragment>) : (
+                    <React.Fragment>
+                      <Link to="/login">
+                        <Menu.Item header style={{ fontSize: "1.5em" }}>Login</Menu.Item>
+                      </Link>
+                      <Link to="/signup">
+                        <Menu.Item header style={{ fontSize: "1.5em" }}>Signup</Menu.Item>
+                      </Link>
+                    </React.Fragment>
+                  )}
+              </Menu.Menu>
+            </Container>
+          </Menu>
+        </Sticky>
 
         {this.props.children}
 
         <Segment
           inverted
           vertical
-          style={{ margin: "5em 0em 0em", padding: "5em 0em" }}
-        >
+          style={{ margin: "5em 0em 0em", padding: "5em 0em" }} >
+
           <Container textAlign="center">
             <Grid divided inverted stackable>
               <Grid.Column width={3}>

@@ -1,9 +1,10 @@
 import React from 'react'
-import { Button, Container, Header, Icon, Label, Menu, Table, Image } from 'semantic-ui-react'
+import { Button, Container, Header, Icon, Label, Menu, Table, Image, Segment } from 'semantic-ui-react'
 import { authAxios } from '../utils'
 import { orderSummaryURL, orderItemDeleteURL, addToCartURL, orderItemUpdateQuantityURL } from '../constants'
 import { connect } from "react-redux";
 import { Link, Redirect } from "react-router-dom";
+import { fetchCart } from '../store/actions/cart'
 
 class OrderSummary extends React.Component {
 
@@ -15,6 +16,7 @@ class OrderSummary extends React.Component {
 
     componentDidMount() {
         this.handleFetchOrder()
+        this.props.fetchCart()
     }
 
     handleFetchOrder = () => {
@@ -53,11 +55,14 @@ class OrderSummary extends React.Component {
 
 
     handleRemoveQuantityFromCart = slug => {
+        this.setState({ loading: true })
         authAxios
             .post(orderItemUpdateQuantityURL, { slug })
             .then(res => {
                 //callback
                 this.handleFetchOrder()
+                this.props.fetchCart()
+                this.setState({ loading: false })
             })
             .catch(err => {
                 this.setState({ error: err })
@@ -66,10 +71,13 @@ class OrderSummary extends React.Component {
     }
 
     handleRemoveItem = itemID => {
+        this.setState({ loading: true })
         authAxios.delete(orderItemDeleteURL(itemID))
             .then(res => {
                 //callback
                 this.handleFetchOrder()
+                this.props.fetchCart()
+                this.setState({ loading: false })
             })
             .catch(err => {
                 this.setState({ error: err })
@@ -79,17 +87,16 @@ class OrderSummary extends React.Component {
     render() {
         const { data, error, loading } = this.state
         console.log(data)
-        // redirects to login page if session times out
-        const { isAuthenticated } = this.props;
-        if (!isAuthenticated) {
-            return <Redirect to="/login" />;
-        }
 
         return (
             <Container>
-                <Header as='h3'>
-                    Order Summary
-                </Header>
+                {/*segment padding for better page visibility*/}
+                <Segment style={{ padding: "1em 0em" }} vertical>
+                    <Header as='h1'>
+                        Order Summary
+                    </Header>
+                </Segment>
+
                 {data && <Table celled>
                     <Table.Header>
                         <Table.Row>
@@ -157,11 +164,12 @@ class OrderSummary extends React.Component {
     }
 }
 
-// redirects to login page if session times out
-const mapStateToProps = state => {
+
+const mapDispatchToProps = dispatch => {
     return {
-        isAuthenticated: state.auth.token !== null
+        fetchCart: () => dispatch(fetchCart())
     }
+
 }
 
-export default connect(mapStateToProps)(OrderSummary);
+export default connect(null, mapDispatchToProps)(OrderSummary)
