@@ -1,8 +1,6 @@
 # LibraryCEN4010Team10
 Team 10 Project
 
-To Run:
-
 # Backend development workflow:
 
 virtualenv env
