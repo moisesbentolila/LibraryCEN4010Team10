@@ -1,6 +1,8 @@
 # GeekText
  Team 10 Web Application - Book Store
 
+Run the following commands to get started:
+
 virtualenv env
 
 pip install -r requirements.txt
