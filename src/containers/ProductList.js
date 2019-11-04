@@ -1,7 +1,10 @@
 import React from 'react'
 import axios from 'axios'
 import { connect } from 'react-redux'
-import { Button, Container, Dimmer, Icon, Image, Item, Label, Loader, Message, Segment, Accordion, Header, Pagination, Grid, Divider, Popup } from 'semantic-ui-react'
+import {
+    Button, Container, Icon, Item, Label, Message, Segment, Accordion, Header, Pagination,
+    Grid, Divider, Popup
+} from 'semantic-ui-react'
 import { ProductListURL, addToCartURL } from '../constants'
 import { authAxios } from '../utils'
 import { fetchCart } from '../store/actions/cart'
@@ -70,6 +73,8 @@ class ProductList extends React.Component {
             this.totalPages = Math.floor(data.length / itemsPerPage) + 1
         }
 
+        // slice the data into 2 halfs, one for each columnm, example, 
+        //page 2 is 10-20, page 3 is 20-30
         const items = data.slice(
             (activePage - 1) * itemsPerPage,
             (activePage - 1) * itemsPerPage + itemsPerPage
@@ -84,6 +89,8 @@ class ProductList extends React.Component {
                     </Header>
                 </Segment>
 
+
+
                 {error && (
                     <Message
                         error
@@ -92,17 +99,7 @@ class ProductList extends React.Component {
                     />
                 )}
 
-                {/*solve loading issues*/}
-                {/*                 {loading && (
-                    <Segment>
-                        <Dimmer active inverted>
-                            <Loader inverted>Loading</Loader>
-                        </Dimmer>
-                        <Image src='/images/wireframe/short-paragraph.png' />
-                    </Segment>
-                )} */}
-
-                <Segment>
+                <Segment loading={loading}>
                     <Grid columns={2} relaxed='very'>
                         <Grid.Column>
                             <Item.Group divided>
@@ -112,7 +109,10 @@ class ProductList extends React.Component {
                                         return (<Item key={item.id}>
                                             <Item.Image src={item.image} />
                                             <Item.Content>
-                                                <Item.Header as='a'>{item.title}</Item.Header>
+                                                <Item.Header as='a'
+                                                    onClick={() => this.props.history.push(`/products/${item.id}`)}>
+                                                    {item.title}
+                                                </Item.Header>
                                                 <Item.Meta>
                                                     <span className='cinema'>{item.genre}</span>
                                                 </Item.Meta>
@@ -141,11 +141,11 @@ class ProductList extends React.Component {
                                                     <Popup
                                                         content='Item added!'
                                                         on='click'
-                                                        pinned
+                                                        hideOnScroll
                                                         position='top center'
                                                         trigger={
                                                             <Button primary floated='right' icon labelPosition='right' onClick={() => this.handleAddToCart(item.slug)}>
-                                                                ${item.price}
+                                                                $ {item.price.toFixed(2)}
                                                                 <Icon name='plus cart' />
                                                             </Button>}
                                                     />
@@ -156,6 +156,7 @@ class ProductList extends React.Component {
                                 })}
                             </Item.Group>
                         </Grid.Column>
+
                         <Grid.Column>
                             <Item.Group divided>
                                 {items.map((item, i) => {
@@ -164,7 +165,10 @@ class ProductList extends React.Component {
                                         return (<Item key={item.id}>
                                             <Item.Image src={item.image} />
                                             <Item.Content>
-                                                <Item.Header as='a'>{item.title}</Item.Header>
+                                                <Item.Header as='a'
+                                                    onClick={() => this.props.history.push(`/products/${item.id}`)}>
+                                                    {item.title}
+                                                </Item.Header>
                                                 <Item.Meta>
                                                     <span className='cinema'>{item.genre}</span>
                                                 </Item.Meta>
@@ -181,7 +185,7 @@ class ProductList extends React.Component {
                                                             onClick={this.handleClick}>
                                                             <Icon name='dropdown' />
                                                             Description
-                                        </Accordion.Title>
+                                                        </Accordion.Title>
                                                         <Accordion.Content active={activeIndex === item.id}>
                                                             <p>
                                                                 {item.description}
@@ -194,11 +198,11 @@ class ProductList extends React.Component {
                                                     <Popup
                                                         content='Item added!'
                                                         on='click'
-                                                        pinned
+                                                        hideOnScroll
                                                         position='top center'
                                                         trigger={
                                                             <Button primary floated='right' icon labelPosition='right' onClick={() => this.handleAddToCart(item.slug)}>
-                                                                ${item.price}
+                                                                $ {item.price.toFixed(2)}
                                                                 <Icon name='plus cart' />
                                                             </Button>}
                                                     />

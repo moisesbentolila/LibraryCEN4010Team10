@@ -2,7 +2,6 @@ import React, { createRef } from "react";
 import {
   Container,
   Divider,
-  Dropdown,
   Grid,
   Header,
   Image,
@@ -42,9 +41,14 @@ class CustomLayout extends React.Component {
               <Menu.Menu position='right'>
                 {authenticated ? (
                   <React.Fragment>
+                    <Link to="/profile">
+                      <Menu.Item header style={{ fontSize: "1.5em" }} >
+                        Profile
+                    </Menu.Item>
+                    </Link>
                     <Menu.Item
                       loading={loading}
-                      onClick={() => this.props.history.push('order-summary')}>
+                      onClick={() => this.props.history.push('/order-summary')}>
                       Cart
                     <Icon.Group size='large'>
                         <Icon name='cart' />
@@ -69,6 +73,11 @@ class CustomLayout extends React.Component {
             </Container>
           </Menu>
         </Sticky>
+
+        {/* use to fix footer issue, vertical makes it not visible */}
+        {/*
+        <Segment style={{ minHeight: 2000 }} vertical> </Segment>
+        */}
 
         {this.props.children}
 
