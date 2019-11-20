@@ -15,6 +15,12 @@ export const orderItemDeleteURL = id => `${endpoint}/order-items/${id}/delete/`
 export const orderItemUpdateQuantityURL = `${endpoint}/order-item/update-quantity/`
 export const checkOutURL = `${endpoint}/checkout/`
 export const addCouponURL = `${endpoint}/add-coupon/`
-export const addressListURL = `${endpoint}/addresses/`
+export const addressListURL = addressType => `${endpoint}/addresses/?address_type=${addressType}`
 export const addressCreateURL = `${endpoint}/addresses/create/`
+export const addressUpdateURL = id => `${endpoint}/addresses/${id}/update/`
+export const addressDeleteURL = id => `${endpoint}/addresses/${id}/delete/`
+export const paymentListURL = `${endpoint}/payments/`
+
+
+
 

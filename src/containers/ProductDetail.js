@@ -95,16 +95,16 @@ class ProductDetail extends React.Component {
                                                 <Image centered size='huge' src={item.image} />
                                             </Segment>
                                         </Modal>
+                                        <Label attached='top right' color={item.label === 'Fiction' ? "blue" : "red"} >
+                                            {item.label}
+                                        </Label>
                                         <Card.Content>
                                             <Card.Header>{item.title} </Card.Header>
                                             <Card.Meta>
                                                 <span className='cinema'>{item.genre}</span>
-                                                <Label color={item.label === 'Fiction' ? "blue" : "red"} >
-                                                    {item.label}
-                                                </Label>
                                             </Card.Meta>
                                             <Card.Description>
-                                                Written by John Doe
+                                                Written by {item.author_name}
                                             </Card.Description>
                                         </Card.Content>
                                         <Card.Content extra>
@@ -134,10 +134,13 @@ class ProductDetail extends React.Component {
                                         <Item.Description>
                                             {item.description}
                                         </Item.Description>
-
+                                        <Header as='h1' color='blue'>Author Biography</Header>
+                                        <Item.Description>
+                                            {item.author_bio}
+                                        </Item.Description>
                                         <Header as='h1' color='blue'>Publisher</Header>
                                         <Item.Description>
-                                            {item.description}
+                                            {item.publisher_info}
                                         </Item.Description>
                                     </Item.Content>
                                 </Grid.Column>

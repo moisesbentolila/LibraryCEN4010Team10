@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from core.models import Address, Item, Order, OrderItem, Coupon
+from core.models import Address, Item, Order, OrderItem, Coupon, Payment
 from django_countries.serializer_fields import CountryField
 
 
@@ -33,7 +33,10 @@ class ItemSerializer(serializers.ModelSerializer):
             'label',
             'slug',
             'description',
-            'image'
+            'image',
+            'publisher_info',
+            'author_bio',
+            'author_name',
         )
 
     def get_genre(self, obj):
@@ -105,4 +108,14 @@ class AddressSerializer(serializers.ModelSerializer):
             'zip',
             'address_type',
             'default'
+        )
+
+
+class PaymentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Payment
+        fields = (
+            'id',
+            'amount',
+            'timestamp'
         )

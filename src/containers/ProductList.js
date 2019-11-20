@@ -3,7 +3,7 @@ import axios from 'axios'
 import { connect } from 'react-redux'
 import {
     Button, Container, Icon, Item, Label, Message, Segment, Accordion, Header, Pagination,
-    Grid, Divider, Popup
+    Grid, Divider, Popup, Form
 } from 'semantic-ui-react'
 import { ProductListURL, addToCartURL } from '../constants'
 import { authAxios } from '../utils'
@@ -17,8 +17,17 @@ class ProductList extends React.Component {
         data: [],
         activeIndex: 0,
         itemsPerPage: 10,
+        submittedItemsPerPage: 10,
         activePage: 1,
         totalPages: 10,
+    }
+
+    handleChange = (e, { name, value }) => this.setState({ [name]: value })
+
+    handleSubmit = () => {
+        const { submittedItemsPerPage } = this.state
+
+        this.setState({ itemsPerPage: submittedItemsPerPage })
     }
 
     handlePaginationChange = (e, { activePage }) => this.setState({ activePage })
@@ -62,7 +71,8 @@ class ProductList extends React.Component {
 
 
     render() {
-        const { data, error, loading, activeIndex, activePage, itemsPerPage } = this.state
+        const { data, error, loading, activeIndex, activePage,
+            itemsPerPage, submittedItemsPerPage } = this.state
 
         //if item count divided by items per page has NO remainder
         if (data.length % itemsPerPage === 0) {
@@ -122,7 +132,7 @@ class ProductList extends React.Component {
                                                 {item.discount_price && (<Label color=
                                                     {"green"} >DISCOUNTED</Label>)}
                                                 <Item.Description>
-                                                    <Accordion>
+                                                    {/* <Accordion>
                                                         <Accordion.Title
                                                             active={activeIndex === item.id}
                                                             index={item.id}
@@ -135,7 +145,7 @@ class ProductList extends React.Component {
                                                                 {item.description}
                                                             </p>
                                                         </Accordion.Content>
-                                                    </Accordion>
+                                                    </Accordion> */}
                                                 </Item.Description>
                                                 <Item.Extra>
                                                     <Popup
@@ -178,7 +188,7 @@ class ProductList extends React.Component {
                                                 {item.discount_price && (<Label color=
                                                     {"green"} >DISCOUNTED</Label>)}
                                                 <Item.Description>
-                                                    <Accordion>
+                                                    {/*                               <Accordion>
                                                         <Accordion.Title
                                                             active={activeIndex === item.id}
                                                             index={item.id}
@@ -191,7 +201,7 @@ class ProductList extends React.Component {
                                                                 {item.description}
                                                             </p>
                                                         </Accordion.Content>
-                                                    </Accordion>
+                                                    </Accordion> */}
 
                                                 </Item.Description>
                                                 <Item.Extra>
@@ -224,6 +234,18 @@ class ProductList extends React.Component {
                     onPageChange={this.handlePaginationChange}
                     totalPages={this.totalPages}
                 />
+                <Segment compact>
+                    <Form onSubmit={this.handleSubmit}>
+                        <Form.Input
+                            label='Items per page'
+                            name='submittedItemsPerPage'
+                            onChange={this.handleChange}
+                            value={submittedItemsPerPage}
+                        />
+                        <Form.Button content='Submit' />
+                    </Form>
+                </Segment>
+
             </Container>
         );
     }

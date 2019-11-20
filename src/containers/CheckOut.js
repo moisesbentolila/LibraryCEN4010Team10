@@ -1,8 +1,12 @@
-import React, { Component } from 'react';
-import { CardElement, injectStripe, Elements, StripeProvider } from 'react-stripe-elements';
-import { Container, Button, Segment, Header, Step, Icon, Message, Placeholder, Item, Divider, Loader, Dimmer, Image, Form, Label } from 'semantic-ui-react'
-import { authAxios } from '../utils';
-import { orderSummaryURL, checkOutURL, addCouponURL } from '../constants'
+import React, { Component } from 'react'
+import { CardElement, injectStripe, Elements, StripeProvider } from 'react-stripe-elements'
+import {
+    Container, Button, Segment, Header, Step, Icon, Message,
+    Item, Divider, Loader, Dimmer, Image, Form, Label, Select,
+} from 'semantic-ui-react'
+import { authAxios } from '../utils'
+import { orderSummaryURL, checkOutURL, addCouponURL, addressListURL } from '../constants'
+import { Link } from "react-router-dom"
 
 
 const OrderPreview = (props) => {
@@ -39,19 +43,25 @@ const OrderPreview = (props) => {
                     <Item.Group>
                         <Item>
                             <Item.Content>
+                                {data.coupon &&
+                                    <Label style={{ fontSize: "1.33em" }}>
+                                        Order Sub-Total: $ {(data.total + data.coupon.amount).toFixed(2)}
+                                    </Label>}
+                                {data.coupon &&
+                                    <Label color='green' style={{ fontSize: "1.33em" }}>
+                                        - ${data.coupon.amount}
+                                    </Label>}
+                                <br></br>
+                                <br></br>
                                 <Label style={{ fontSize: "1.33em" }}>
                                     Order Total:
                                     $ {data.total.toFixed(2)}
                                 </Label>
-                                {data.coupon && <Label color='green' style={{ fontSize: "1.33em" }}>
-                                    - ${data.coupon.amount}
-                                </Label>}
                                 {data.coupon &&
                                     <Message positive>
                                         <Message.Header>Your coupon is valid!</Message.Header>
                                     </Message>
                                 }
-
                             </Item.Content>
                         </Item>
                     </Item.Group>
@@ -110,10 +120,77 @@ class CheckoutForm extends Component {
         billStep: false,
         confirmStep: false,
         couponValid: null,
+        billingAddresses: [],
+        shippingAddresses: [],
+        selectedShippingAddress: '',
+        selectedBillingAddress: ''
     }
 
     componentDidMount() {
         this.handleFetchOrder()
+        this.handleFetchBillingAddresses()
+        this.handleFetchShippingAddresses()
+    }
+
+    // returns address ID
+    handleGetDefaultAddress = addresses => {
+        // for each element (el =>), if default is true, add to array
+        const filteredAddresses = addresses.filter(el => el.default === true)
+        // if there is a default address
+        if (filteredAddresses.length > 0) {
+            return filteredAddresses[0].id
+        }
+        //else empty string
+        return ''
+    }
+
+    handleFetchBillingAddresses = () => {
+        this.setState({ loading: true })
+        authAxios
+            // B for billing addresss
+            .get(addressListURL('B'))
+            .then(res => {
+                this.setState({
+                    billingAddresses: res.data.map(a => {
+                        return {
+                            key: a.id,
+                            text: `${a.street_address}, ${a.apartment_address}, ${a.country}`,
+                            value: a.id
+                        }
+                    }),
+                    // the billing address chosen for the order
+                    selectedBillingAddress: this.handleGetDefaultAddress(res.data),
+                    loading: false
+                })
+            })
+            .catch(err => {
+                this.setState({ error: err, loading: false })
+            })
+    }
+
+    handleFetchShippingAddresses = () => {
+        this.setState({ loading: true })
+        authAxios
+            // S for shipping address
+            .get(addressListURL('S'))
+            .then(res => {
+                // map data for each address
+                this.setState({
+                    shippingAddresses: res.data.map(a => {
+                        return {
+                            key: a.id,
+                            text: `${a.street_address}, ${a.apartment_address}, ${a.country}`,
+                            value: a.id
+                        }
+                    }),
+                    // the shipping address chosen for the order
+                    selectedShippingAddress: this.handleGetDefaultAddress(res.data),
+                    loading: false
+                })
+            })
+            .catch(err => {
+                this.setState({ error: err, loading: false })
+            })
     }
 
     handleFetchOrder = () => {
@@ -146,8 +223,13 @@ class CheckoutForm extends Component {
                 this.handleFetchOrder()
             })
             .catch(err => {
-                this.setState({ error: err, loading: false, couponValid: false })
+                this.setState({ couponError: err, loading: false, couponValid: false })
             })
+    }
+
+    //used to change the selected address in the checkout 3 step page
+    handleSelectChange = (e, { name, value }) => {
+        this.setState({ [name]: value })
     }
 
     submit = ev => {
@@ -159,10 +241,15 @@ class CheckoutForm extends Component {
                     this.setState({ error: result.error.message, loading: false })
                 } else {
                     this.setState({ error: null })
+
+                    const { selectedBillingAddress, selectedShippingAddress } = this.state
                     authAxios
-                        .post(checkOutURL, {
-                            stripeToken: result.token.id
-                        })
+                        .post(checkOutURL,
+                            {
+                                stripeToken: result.token.id,
+                                selectedBillingAddress,
+                                selectedShippingAddress
+                            })
                         .then(res => {
                             this.setState({ loading: false, success: true })
                             // redirect the user
@@ -194,11 +281,14 @@ class CheckoutForm extends Component {
     stepBack = () => {
         const { billStep } = this.state
         const { confirmStep } = this.state
+        const { couponValid } = this.state
 
         if (billStep === true) {
             this.setState({ billStep: false })
             this.setState({ shipStep: true })
         } else if (confirmStep === true) {
+            // if stepping back, reset coupon valid state in order to reset message
+            this.setState({ couponValid: null })
             this.setState({ confirmStep: false })
             this.setState({ billStep: true })
         }
@@ -206,23 +296,29 @@ class CheckoutForm extends Component {
 
 
     render() {
-        const { data, error, loading, success, shipStep, billStep, confirmStep, couponValid } = this.state
+        const { data, error, loading, success, shipStep, billStep, confirmStep,
+            couponValid, shippingAddresses, billingAddresses, couponError,
+            selectedBillingAddress, selectedShippingAddress } = this.state
+
         return (
-            <div>
+            < div >
                 {error && (
                     <Message
                         error
                         header="There was some errors with your submission"
                         content={JSON.stringify(error)}
                     />
-                )}
-                {loading && (
-                    <Segment>
-                        <Dimmer active inverted>
-                            <Loader inverted>Loading</Loader>
-                        </Dimmer>
-                    </Segment>
-                )}
+                )
+                }
+                {
+                    loading && (
+                        <Segment>
+                            <Dimmer active inverted>
+                                <Loader inverted>Loading</Loader>
+                            </Dimmer>
+                        </Segment>
+                    )
+                }
 
                 <Step.Group attached='top'>
                     <Step active={shipStep} disabled={!shipStep}>
@@ -250,104 +346,104 @@ class CheckoutForm extends Component {
                 </Step.Group>
 
 
-                {shipStep ? (
-                    <React.Fragment>
-                        <Segment attached>
-                            <Placeholder>
-                                <Placeholder.Header image>
-                                    <Placeholder.Line />
-                                    <Placeholder.Line />
-                                </Placeholder.Header>
-                                <Placeholder.Paragraph>
-                                    <Placeholder.Line />
-                                    <Placeholder.Line />
-                                    <Placeholder.Line />
-                                    <Placeholder.Line />
-                                    <Placeholder.Line />
-                                    <Placeholder.Line />
-                                    <Placeholder.Line />
-                                    <Placeholder.Line />
-                                    <Placeholder.Line />
-                                    <Placeholder.Line />
-                                    <Placeholder.Line />
-                                    <Placeholder.Line />
-                                    <Placeholder.Line />
-                                    <Placeholder.Line />
-                                    <Placeholder.Line />
-                                    <Placeholder.Line />
-                                </Placeholder.Paragraph>
-                            </Placeholder>
-                        </Segment>
-                    </React.Fragment>
+                {/******************************** SHIPPING STEP ********************************/}
+                {
+                    shipStep ? (
+                        <React.Fragment>
+                            <Segment attached>
+                                {/* if there is no shipping address saved to profile, display message*/}
+                                {selectedShippingAddress.length < 1 &&
+                                    <Message negative>
+                                        <Message.Header>No shipping address saved!</Message.Header>
+                                        <p>Go to your profile to update your billing information
+                                            or click the button below</p>
+                                        <Link to='/profile'>
+                                            <Button primary>Add address</Button>
+                                        </Link>
+                                    </Message>}
 
-                ) : billStep ? (
-                    <React.Fragment>
-                        <Segment attached>
-                            <Placeholder>
-                                <Placeholder.Header image>
-                                    <Placeholder.Line />
-                                    <Placeholder.Line />
-                                </Placeholder.Header>
-                                <Placeholder.Paragraph>
-                                    <Placeholder.Line />
-                                    <Placeholder.Line />
-                                    <Placeholder.Line />
-                                    <Placeholder.Line />
-                                    <Placeholder.Line />
-                                    <Placeholder.Line />
-                                    <Placeholder.Line />
-                                    <Placeholder.Line />
-                                    <Placeholder.Line />
-                                    <Placeholder.Line />
-                                    <Placeholder.Line />
-                                    <Placeholder.Line />
-                                    <Placeholder.Line />
-                                    <Placeholder.Line />
-                                    <Placeholder.Line />
-                                    <Placeholder.Line />
-                                </Placeholder.Paragraph>
-                            </Placeholder>
-                        </Segment>
-                    </React.Fragment>
+                                <Header>Select a Shippping Address</Header>
+                                {/* used to select addresses*/}
+                                <Select
+                                    name='selectedShippingAddress'
+                                    value={selectedShippingAddress}
+                                    clearable
+                                    options={shippingAddresses}
+                                    selection
+                                    onChange={this.handleSelectChange} />
 
-                ) : confirmStep ? (
-                    <React.Fragment>
-                        <Segment attached>
 
-                            {/* IMPORTANT: This renders the order preview. Class located above*/}
-                            <OrderPreview data={data} />
+                            </Segment>
+                        </React.Fragment>
+                        //{/******************************** BILLING STEP ********************************/}
+                    ) : billStep ? (
+                        <React.Fragment>
+                            <Segment attached>
+                                {/* if there is no billing address saved to profile, display message*/}
+                                {selectedBillingAddress < 1 &&
+                                    <Message negative>
+                                        <Message.Header>No billing address saved!</Message.Header>
+                                        <p>Go to your profile to update your shipping information
+                                        or click the button below
+                                        </p>
+                                        <Link to='/profile'>
+                                            <Button primary>Add address</Button>
+                                        </Link>
+                                    </Message>}
 
-                            <CouponForm handleAddCoupon={(e, code) => this.handleAddCoupon(e, code)} />
-                            {!couponValid && couponValid != null &&
-                                <Message negative>
-                                    <Message.Header>Your last entered coupon is invalid!</Message.Header>
-                                </Message>
-                            }
+                                <Header>Select a Billing Address</Header>
+                                {/* used to select addresses*/}
+                                <Select
+                                    name='selectedBillingAddress'
+                                    value={selectedBillingAddress}
+                                    clearable
+                                    options={billingAddresses}
+                                    selection
+                                    onChange={this.handleSelectChange} />
 
-                            <Divider />
+                            </Segment>
+                        </React.Fragment>
+                        //{/***************************** CONFIRMATION STEP ***************************** /}
+                    ) : confirmStep ? (
+                        <React.Fragment>
+                            <Segment attached>
 
-                            <Header>
-                                Enter Card Information to Complete Purchase:
+                                {/* IMPORTANT: This renders the order preview. Class located above*/}
+                                <OrderPreview data={data} />
+
+                                <CouponForm handleAddCoupon={(e, code) => this.handleAddCoupon(e, code)} />
+                                {!couponValid && couponValid != null &&
+                                    <Message negative>
+                                        <Message.Header>Your last entered coupon is invalid!</Message.Header>
+                                    </Message>
+                                }
+
+                                <Divider />
+
+                                <Header>
+                                    Enter Card Information to Complete Purchase:
                             </Header>
 
-                            <CardElement />
-                            {error &&
-                                <Message negative>
-                                    <Message.Header>Your payment was unsuccessful!</Message.Header>
-                                    <p>{JSON.stringify(error)}</p>
-                                </Message>
-                            }
-                            {success &&
-                                <Message positive>
-                                    <Message.Header>Your payment was successful!</Message.Header>
-                                    <p>
-                                        Go to your <b>profile</b> to see the order delivery status.
-                                    </p>
-                                </Message>
-                            }
+                                <CardElement />
 
-                        </Segment>
-                    </React.Fragment>) : null}
+                                {error &&
+                                    <Message negative>
+                                        <Message.Header>Your payment was unsuccessful!</Message.Header>
+                                        <p>{JSON.stringify(error)}</p>
+                                    </Message>
+                                }
+                                {success &&
+                                    <Message positive>
+                                        <Message.Header>Your payment was successful!</Message.Header>
+                                        <p>
+                                            Go to your <b>profile</b> to see the order delivery status.
+                                    </p>
+                                    </Message>
+                                }
+
+                            </Segment>
+                        </React.Fragment>) : null
+                }
 
                 <Segment Segment style={{ padding: "2em 0em" }} vertical >
                     {shipStep ? (
@@ -362,15 +458,44 @@ class CheckoutForm extends Component {
                         </React.Fragment>
                     ) : confirmStep ? (
                         <React.Fragment>
+
+                            {/* must save a shipping address before purchase */}
+                            {selectedShippingAddress.length < 1 &&
+                                <Message negative>
+                                    <Message.Header>No shipping address selected!</Message.Header>
+                                    <p>Go to your profile to update your billing information
+                                            or click the button below</p>
+                                    <Link to='/profile'>
+                                        <Button primary>Add address</Button>
+                                    </Link>
+                                </Message>}
+                            {/* must save a billing address before purchase */}
+                            {selectedBillingAddress < 1 &&
+                                <Message negative>
+                                    <Message.Header>No billing address selected!</Message.Header>
+                                    <p>Go to your profile to update your shipping information
+                                    or click the button below
+                                        </p>
+                                    <Link to='/profile'>
+                                        <Button primary>Add address</Button>
+                                    </Link>
+                                </Message>}
+
                             <Button onClick={this.stepBack}>Back</Button>
-                            {/* disabled={loading} to prevent submitting payment twice */}
-                            <Button color='yellow' loading={loading} disabled={loading} onClick={this.submit} style={{ marginTop: '10px' }} >
-                                Submit Order
-                            </Button>
+                            {/* disabled={loading} to prevent submitting payment twice;
+                            if there's not at least 1 billing or shipping address, disable submit order button */}
+                            {selectedBillingAddress < 1 || selectedShippingAddress < 1 ?
+                                <Button color='yellow' loading={loading} disabled style={{ marginTop: '10px' }} >
+                                    Submit Order
+                                </Button> :
+                                <Button color='yellow' loading={loading} disabled={loading} onClick={this.submit} style={{ marginTop: '10px' }} >
+                                    Submit Order
+                                </Button>}
+
                         </React.Fragment>) : null}
                 </Segment>
 
-            </div>
+            </div >
         )
     }
 }
@@ -396,6 +521,7 @@ const WarappedForm = () => (
 
     </Container>
 )
+
 export default WarappedForm
 
 

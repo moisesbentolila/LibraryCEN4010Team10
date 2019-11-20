@@ -7,9 +7,49 @@ from django_countries.fields import CountryField
 
 
 GENRE_CHOICES = (
+    # Fiction
     ('AA', 'Action and adventure'),
+    ('AH', 'Alternate history'),
+    ('AT', 'Anthology'),
+    ('CH', 'Childrens'),
+    ('CO', 'Comic book'),
+    ('CR', 'Crime'),
+    ('DR', 'Drama'),
+    ('FT', 'Fairytale'),
+    ('FA', 'Fantasy'),
+    ('GN', 'Graphic novel'),
+    ('HF', 'Historical fiction'),
+    ('HO', 'Horror'),
+    ('MY', 'Mystery'),
+    ('PO', 'Poetry'),
+    ('PT', 'Political thriller'),
+    ('RO', 'Romance'),
+    ('SF', 'Science fiction'),
+    ('SS', 'Short story'),
+    ('SP', 'Suspense'),
+    ('TH', 'Thriller'),
+
+    # Non-Fiction
     ('AR', 'Art'),
-    ('HI', 'History')
+    ('AB', 'Autobiography'),
+    ('BO', 'Biography'),
+    ('BR', 'Book review'),
+    ('CB', 'Cookbook'),
+    ('DI', 'Diary'),
+    ('EN', 'Encyclopedia'),
+    ('GU', 'Guide'),
+    ('HE', 'Health'),
+    ('HI', 'History'),
+    ('JO', 'Journal'),
+    ('MA', 'Math'),
+    ('ME', 'Memoir'),
+    ('RS', 'Religion, spirituality, and new age'),
+    ('TB', 'Textbook'),
+    ('RE', 'Review'),
+    ('SC', 'Science'),
+    ('SH', 'Self help'),
+    ('TR', 'Travel'),
+
 )
 
 BOOK_TYPE = (
@@ -34,14 +74,21 @@ class UserProfile(models.Model):
 
 
 class Item(models.Model):
+    # book name
     title = models.CharField(max_length=100)
     price = models.FloatField()
     discount_price = models.FloatField(blank=True, null=True)
+    # book genre
     genre = models.CharField(choices=GENRE_CHOICES, max_length=2)
     label = models.CharField(choices=BOOK_TYPE, max_length=1)
     slug = models.SlugField()
+    # book description
     description = models.TextField()
     image = models.ImageField()
+    # book publishing info
+    publisher_info = models.TextField(blank=True, null=True)
+    author_name = models.TextField(blank=True, null=True)
+    author_bio = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return self.title
