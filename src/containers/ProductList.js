@@ -3,7 +3,7 @@ import axios from 'axios'
 import { connect } from 'react-redux'
 import {
     Button, Container, Icon, Item, Label, Message, Segment, Accordion, Header, Pagination,
-    Grid, Divider, Popup, Form
+    Grid, Divider, Popup, Form, Card, Modal, Image, Rating
 } from 'semantic-ui-react'
 import { ProductListURL, addToCartURL } from '../constants'
 import { authAxios } from '../utils'
@@ -14,44 +14,83 @@ class ProductList extends React.Component {
     state = {
         loading: false,
         error: null,
-        data: [],
-        activeIndex: 0,
-        itemsPerPage: 10,
+        data: [], //note, value stored from response is res.data.results
+        testData: [],
         submittedItemsPerPage: 10,
         activePage: 1,
-        totalPages: 10,
+        totalPages: 1,
+        defaultActivePage: 1,  //default activate page is #1
+        itemsPerPage: 1,
+        itemTotalCount: 1,
+
     }
 
-    handleChange = (e, { name, value }) => this.setState({ [name]: value })
+    handleTotalPageCount = (totalProductsCount, itemsPerPage) => {
+        //if item count divided by items per page has NO remainder
 
-    handleSubmit = () => {
-        const { submittedItemsPerPage } = this.state
 
-        this.setState({ itemsPerPage: submittedItemsPerPage })
+
+        if (totalProductsCount % itemsPerPage === 0) {
+
+            const newPageCount = totalProductsCount / itemsPerPage
+            this.setState({ totalPages: newPageCount })
+
+        }
+        //else, if item count divided by items per page has remainder, add 1
+        else {
+            const newPageCount = Math.floor(totalProductsCount / itemsPerPage) + 1
+            this.setState({ totalPages: newPageCount })
+
+        }
     }
 
-    handlePaginationChange = (e, { activePage }) => this.setState({ activePage })
-
-    handleClick = (e, titleProps) => {
-        const { index } = titleProps
-        const { activeIndex } = this.state
-        const newIndex = activeIndex === index ? -1 : index
-
-        this.setState({ activeIndex: newIndex })
+    handlePaginationChange = (e, { activePage }) => {
+        this.setState({ activePage })
+        this.handleFetchProductList(activePage)
     }
 
 
     componentDidMount() {
+        const { defaultActivePage } = this.state
+        this.handleFetchProductList(defaultActivePage)
+        this.hadleFetchItemsPerPage()
+        this.hadleFetchItemTotalCount()
+    }
+
+    hadleFetchItemsPerPage = () => {
         this.setState({ loading: true })
-        axios.get(ProductListURL)
+        axios.get(ProductListURL(1))
             .then(res => {
-                console.log(res.data)
-                this.setState({ data: res.data, loading: false })
+                this.setState({ itemsPerPage: res.data.results.length, loading: false })
             })
             .catch(err => {
                 this.setState({ error: err, loading: false })
             })
+    }
 
+    hadleFetchItemTotalCount = () => {
+        this.setState({ loading: true })
+        axios.get(ProductListURL(1))
+            .then(res => {
+                this.setState({ itemTotalCount: res.data.count, loading: false })
+            })
+            .catch(err => {
+                this.setState({ error: err, loading: false })
+            })
+    }
+
+    handleFetchProductList = pageNumber => {
+        this.setState({ loading: true })
+        const { itemsPerPage } = this.state
+
+        axios.get(ProductListURL(pageNumber))
+            .then(res => {
+                this.handleTotalPageCount(res.data.count, itemsPerPage)
+                this.setState({ data: res.data.results, loading: false })
+            })
+            .catch(err => {
+                this.setState({ error: err, loading: false })
+            })
     }
 
     handleAddToCart = slug => {
@@ -59,7 +98,6 @@ class ProductList extends React.Component {
         authAxios
             .post(addToCartURL, { slug })
             .then(res => {
-                console.log(res.data)
                 this.props.fetchCart()
                 this.setState({ loading: false })
             })
@@ -69,26 +107,9 @@ class ProductList extends React.Component {
     }
 
 
-
     render() {
-        const { data, error, loading, activeIndex, activePage,
-            itemsPerPage, submittedItemsPerPage } = this.state
-
-        //if item count divided by items per page has NO remainder
-        if (data.length % itemsPerPage === 0) {
-            this.totalPages = data.length / itemsPerPage
-        }
-        //else, if item count divided by items per page has remainder, add 1
-        else {
-            this.totalPages = Math.floor(data.length / itemsPerPage) + 1
-        }
-
-        // slice the data into 2 halfs, one for each columnm, example, 
-        //page 2 is 10-20, page 3 is 20-30
-        const items = data.slice(
-            (activePage - 1) * itemsPerPage,
-            (activePage - 1) * itemsPerPage + itemsPerPage
-        )
+        const { data, error, loading, activePage,
+            itemsPerPage, submittedItemsPerPage, totalPages } = this.state
 
         return (
             <Container>
@@ -100,7 +121,6 @@ class ProductList extends React.Component {
                 </Segment>
 
 
-
                 {error && (
                     <Message
                         error
@@ -110,130 +130,63 @@ class ProductList extends React.Component {
                 )}
 
                 <Segment loading={loading}>
-                    <Grid columns={2} relaxed='very'>
-                        <Grid.Column>
-                            <Item.Group divided>
-                                {items.map((item, i) => {
-                                    // sort by odd index; odd items are placed inside left column
-                                    if ((i % 2) === 0) {
-                                        return (<Item key={item.id}>
-                                            <Item.Image src={item.image} />
-                                            <Item.Content>
-                                                <Item.Header as='a'
-                                                    onClick={() => this.props.history.push(`/products/${item.id}`)}>
-                                                    {item.title}
-                                                </Item.Header>
-                                                <Item.Meta>
-                                                    <span className='cinema'>{item.genre}</span>
-                                                </Item.Meta>
-                                                <Label color={item.label === 'Fiction' ? "blue" : "red"} >
-                                                    {item.label}
-                                                </Label>
-                                                {item.discount_price && (<Label color=
-                                                    {"green"} >DISCOUNTED</Label>)}
-                                                <Item.Description>
-                                                    {/* <Accordion>
-                                                        <Accordion.Title
-                                                            active={activeIndex === item.id}
-                                                            index={item.id}
-                                                            onClick={this.handleClick}>
-                                                            <Icon name='dropdown' />
-                                                            Description
-                                                    </Accordion.Title>
-                                                        <Accordion.Content active={activeIndex === item.id}>
-                                                            <p>
-                                                                {item.description}
-                                                            </p>
-                                                        </Accordion.Content>
-                                                    </Accordion> */}
-                                                </Item.Description>
-                                                <Item.Extra>
-                                                    <Popup
-                                                        content='Item added!'
-                                                        on='click'
-                                                        hideOnScroll
-                                                        position='top center'
-                                                        trigger={
-                                                            <Button primary floated='right' icon labelPosition='right' onClick={() => this.handleAddToCart(item.slug)}>
-                                                                $ {item.price.toFixed(2)}
-                                                                <Icon name='plus cart' />
-                                                            </Button>}
-                                                    />
-                                                </Item.Extra>
-                                            </Item.Content>
-                                        </Item>)
-                                    }
-                                })}
-                            </Item.Group>
-                        </Grid.Column>
+                    <Card.Group itemsPerRow={3}>
+                        {data.map((item, i) => {
+                            return (
+                                <React.Fragment>
+                                    <Card centered>
 
-                        <Grid.Column>
-                            <Item.Group divided>
-                                {items.map((item, i) => {
-                                    // sort by even index; even items are placed inside right column
-                                    if ((i % 2) > 0) {
-                                        return (<Item key={item.id}>
-                                            <Item.Image src={item.image} />
-                                            <Item.Content>
-                                                <Item.Header as='a'
-                                                    onClick={() => this.props.history.push(`/products/${item.id}`)}>
-                                                    {item.title}
-                                                </Item.Header>
-                                                <Item.Meta>
-                                                    <span className='cinema'>{item.genre}</span>
-                                                </Item.Meta>
-                                                <Label color={item.label === 'Fiction' ? "blue" : "red"} >
-                                                    {item.label}
-                                                </Label>
-                                                {item.discount_price && (<Label color=
-                                                    {"green"} >DISCOUNTED</Label>)}
-                                                <Item.Description>
-                                                    {/*                               <Accordion>
-                                                        <Accordion.Title
-                                                            active={activeIndex === item.id}
-                                                            index={item.id}
-                                                            onClick={this.handleClick}>
-                                                            <Icon name='dropdown' />
-                                                            Description
-                                                        </Accordion.Title>
-                                                        <Accordion.Content active={activeIndex === item.id}>
-                                                            <p>
-                                                                {item.description}
-                                                            </p>
-                                                        </Accordion.Content>
-                                                    </Accordion> */}
+                                        <Image
+                                            centered size='medium' src={item.image}
+                                            onClick={() => this.props.history.push(`/products/${item.id}`)}
+                                        />
 
-                                                </Item.Description>
-                                                <Item.Extra>
-                                                    <Popup
-                                                        content='Item added!'
-                                                        on='click'
-                                                        hideOnScroll
-                                                        position='top center'
-                                                        trigger={
-                                                            <Button primary floated='right' icon labelPosition='right' onClick={() => this.handleAddToCart(item.slug)}>
-                                                                $ {item.price.toFixed(2)}
-                                                                <Icon name='plus cart' />
-                                                            </Button>}
-                                                    />
-                                                </Item.Extra>
-                                            </Item.Content>
-                                        </Item>)
-                                    }
-
-                                })}
-                            </Item.Group>
-                        </Grid.Column>
-                    </Grid>
-
-                    <Divider vertical>And</Divider>
+                                        <Label attached='top right' color={item.label === 'Fiction' ? "blue" : "red"} >
+                                            {item.label}
+                                        </Label>
+                                        <Card.Content>
+                                            <Card.Header
+                                                onClick={() => this.props.history.push(`/products/${item.id}`)}>
+                                                {item.title}
+                                            </Card.Header>
+                                            <Card.Meta>
+                                                <span className='cinema'>{item.genre}</span>
+                                            </Card.Meta>
+                                            <Card.Description>
+                                                Written by {item.author_name}
+                                            </Card.Description>
+                                        </Card.Content>
+                                        <Card.Content extra>
+                                            <a>
+                                                <Rating icon='star' defaultRating={0} maxRating={10} />
+                                                <br></br>Customer Reviews
+                                            </a>
+                                        </Card.Content>
+                                        <Popup
+                                            content='Item added!'
+                                            on='click'
+                                            hideOnScroll
+                                            position='bottom center'
+                                            trigger={
+                                                <Button primary floated='right' icon labelPosition='right' onClick={() => this.handleAddToCart(item.slug)}>
+                                                    {/* convert number from string to float, fix to 2 decimal places*/}
+                                                    $ {Number.parseFloat(item.price).toFixed(2)}
+                                                    <Icon name='plus cart' />
+                                                </Button>}
+                                        />
+                                    </Card>
+                                </React.Fragment>
+                            )
+                        })}
+                    </Card.Group>
                 </Segment>
 
                 <Pagination
                     activePage={activePage}
                     onPageChange={this.handlePaginationChange}
-                    totalPages={this.totalPages}
+                    totalPages={totalPages}
                 />
+
                 <Segment compact>
                     <Form onSubmit={this.handleSubmit}>
                         <Form.Input

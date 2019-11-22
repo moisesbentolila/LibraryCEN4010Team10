@@ -1,7 +1,13 @@
 import React from 'react'
-import { Button, Container, Header, Icon, Label, Table, Image, Segment, Message } from 'semantic-ui-react'
+import {
+    Button, Container, Header, Icon, Label, Table, Image, Segment, Message,
+    Item, Grid, Divider, Pagination, Popup, Form, Card, Rating
+} from 'semantic-ui-react'
 import { authAxios } from '../utils'
-import { orderSummaryURL, orderItemDeleteURL, addToCartURL, orderItemUpdateQuantityURL } from '../constants'
+import {
+    orderSummaryURL, orderItemDeleteURL, addToCartURL, orderItemUpdateQuantityURL,
+    SavedForLaterListURL, addToSavedItemListURL, userIDURL, SavedForLaterItemDeleteURL
+} from '../constants'
 import { connect } from "react-redux";
 import { Link, Redirect } from "react-router-dom";
 import { fetchCart } from '../store/actions/cart'
@@ -12,12 +18,59 @@ class OrderSummary extends React.Component {
     state = {
         data: null,
         error: null,
-        loading: false
+        loading: false,
+        userID: null
+
     }
 
     componentDidMount() {
         this.handleFetchOrder()
         this.props.fetchCart()
+        this.handleFetchUserID()
+    }
+
+    handleFetchUserID = () => {
+        authAxios
+            .get(userIDURL)
+            .then(res => {
+                this.setState({ userID: res.data.userID })
+            })
+            .catch(err => {
+                this.setState({ error: err })
+            })
+    }
+
+    handleCreateSavedItem = (selectedItem, orderItemID) => {
+        const userID = this.state
+
+        authAxios
+            .post(addToSavedItemListURL, {
+                author_bio: selectedItem.author_bio,
+                author_name: selectedItem.author_name,
+                description: selectedItem.description,
+                discount_price: selectedItem.discount_price,
+                genre: selectedItem.genre,
+                id: selectedItem.id,
+                image: selectedItem.image,
+                label: selectedItem.label,
+                price: selectedItem.price,
+                publisher_info: selectedItem.publisher_info,
+                slug: selectedItem.slug,
+                title: selectedItem.title,
+                user: userID.userID
+            })
+            .then(res => {
+                this.handleRemoveItem(orderItemID)
+                this.setState({
+                    saving: false,
+                    success: true,
+                })
+                //reload the page to show updated information
+                window.location.reload(false)
+            })
+            .catch(err => {
+                this.setState({ error: err })
+            })
     }
 
     handleFetchOrder = () => {
@@ -88,11 +141,10 @@ class OrderSummary extends React.Component {
     render() {
         const { data, error, loading } = this.state
         const { isAuthenticated } = this.props
-        if (!isAuthenticated) {
-            return <Redirect to="/login" />;
-        }
-        console.log(data)
 
+        if (!isAuthenticated) {
+            //return <Redirect to="/login" />;
+        }
 
 
         return (
@@ -126,6 +178,7 @@ class OrderSummary extends React.Component {
 
                         <Table.Body>
                             {data.order_items.map((orderItem, i) => {
+
                                 return (
                                     <Table.Row key={orderItem.id}>
                                         <Table.Cell>
@@ -143,6 +196,24 @@ class OrderSummary extends React.Component {
                                             <Icon name='minus' color='red' style={{ float: 'left', cursor: 'pointer' }} onClick={() => this.handleRemoveQuantityFromCart(orderItem.item_obj.slug)} ></Icon>
                                             {orderItem.quantity}
                                             <Icon name='plus' color='green' style={{ float: 'right', cursor: 'pointer' }} onClick={() => this.handleAddToCart(orderItem.item_obj.slug)}></Icon>
+                                            <br></br>
+                                            <br></br>
+                                            <Popup
+                                                content='Saved for later!'
+                                                on='click'
+                                                hideOnScroll
+                                                position='top center'
+                                                trigger={
+                                                    <Button primary floated='left'
+                                                        onClick=
+                                                        {
+                                                            () => this.handleCreateSavedItem(orderItem.item_obj, orderItem.id)
+                                                            //, () => this.handleRemoveItem(orderItem.id)
+                                                        }
+                                                    >
+                                                        Save For Later
+                                                    </Button>}
+                                            />
                                         </Table.Cell>
                                         <Table.Cell>
                                             $ {orderItem.final_price.toFixed(2)}
@@ -181,10 +252,164 @@ class OrderSummary extends React.Component {
                         </Table.Footer>
                     </Table>}
                 </Segment>
+
+
+                <Segment>
+                    {/* Saved Item List */}
+                    <SavedForLaterItemList />
+                </Segment>
+
+
             </Container >
         )
     }
 }
+
+class SavedForLaterItemList extends React.Component {
+    state = {
+        loading: false,
+        error: null,
+        data: [],
+        activeIndex: 0,
+        itemsPerPage: 10,
+        submittedItemsPerPage: 10,
+        activePage: 1,
+        totalPages: 10,
+
+    }
+
+
+    handleChange = (e, { name, value }) => this.setState({ [name]: value })
+
+    handleSubmit = () => {
+        const { submittedItemsPerPage } = this.state
+
+        this.setState({ itemsPerPage: submittedItemsPerPage })
+    }
+
+    handlePaginationChange = (e, { activePage }) => this.setState({ activePage })
+
+    handleClick = (e, titleProps) => {
+        const { index } = titleProps
+        const { activeIndex } = this.state
+        const newIndex = activeIndex === index ? -1 : index
+
+        this.setState({ activeIndex: newIndex })
+    }
+
+
+    componentDidMount() {
+        this.handleFetchSavedForLaterList()
+    }
+
+    handleFetchSavedForLaterList = () => {
+        this.setState({ loading: true })
+        // UTILIZE authAxios when authentication is required, not axios
+        authAxios.get(SavedForLaterListURL)
+            .then(res => {
+                this.setState({ data: res.data.results, loading: false })
+            })
+            .catch(err => {
+                this.setState({ error: err, loading: false })
+            })
+    }
+
+    handleDeleteSavedItem = savedItemID => {
+        authAxios
+            .delete(SavedForLaterItemDeleteURL(savedItemID))
+            .then(res => {
+                //reload the page to show updated information
+                window.location.reload(false)
+                this.handleFetchOrder()
+                this.props.fetchCart()
+                this.setState({ loading: false })
+            })
+            .catch(err => {
+                this.setState({ error: err })
+            })
+    }
+
+
+    handleAddToCart = (slug, savedItemID) => {
+        this.setState({ loading: true })
+        authAxios
+            .post(addToCartURL, { slug })
+            .then(res => {
+                this.handleDeleteSavedItem(savedItemID)
+                this.props.fetchCart()
+                this.setState({ loading: false })
+            })
+            .catch(err => {
+                this.setState({ error: err, loading: false })
+            })
+    }
+
+
+
+    render() {
+        const { data, error, loading, activeIndex, activePage,
+            itemsPerPage, submittedItemsPerPage } = this.state
+
+
+
+        return (
+            <Container>
+                {/*segment padding for better page visibility*/}
+                <Segment style={{ padding: "1em 0em" }} vertical>
+                    <Header as='h1'>
+                        Saved For Later List
+                    </Header>
+                </Segment>
+
+                {/* 
+
+                {error && (
+                    <Message
+                        error
+                        header='There were some errors with your submission'
+                        content={JSON.stringify(error)}
+                    />
+                )} */}
+
+                <Segment loading={loading}>
+                    <Card.Group itemsPerRow={4}>
+                        {data.map((item, i) => {
+                            return (
+                                <React.Fragment>
+                                    <Card centered>
+                                        <Image
+                                            src={`http://127.0.0.1:8000${item.image}`}
+                                        />
+                                        <Card.Content>
+                                            <Card.Header>
+                                                {item.title}
+                                            </Card.Header>
+                                        </Card.Content>
+                                        <Popup
+                                            content='Item added!'
+                                            on='click'
+                                            hideOnScroll
+                                            position='bottom center'
+                                            trigger={
+                                                <Button primary floated='right' icon labelPosition='right' onClick={() => this.handleAddToCart(item.slug, item.id)}>
+                                                    {/* convert number from string to float, fix to 2 decimal places*/}
+                                                    $ {Number.parseFloat(item.price).toFixed(2)}
+                                                    <Icon name='plus cart' />
+                                                </Button>}
+                                        />
+                                    </Card>
+                                </React.Fragment>
+                            )
+                        })}
+                    </Card.Group>
+
+                </Segment>
+
+            </Container>
+        );
+    }
+}
+
 
 const mapDispatchToProps = dispatch => {
     return {
@@ -199,4 +424,4 @@ const mapStateToProps = state => {
     };
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(OrderSummary);
+export default connect(mapStateToProps, mapDispatchToProps)(OrderSummary, SavedForLaterItemList);

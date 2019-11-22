@@ -19,9 +19,6 @@ class ProductDetail extends React.Component {
         activeIndex: 0
     }
 
-
-
-
     componentDidMount() {
         this.handleFetchItem()
     }
@@ -31,7 +28,6 @@ class ProductDetail extends React.Component {
         this.setState({ loading: true })
         axios.get(ProductDetailURL(params.productID))
             .then(res => {
-                console.log(res.data)
                 this.setState({ data: res.data, loading: false })
             })
             .catch(err => {
@@ -44,7 +40,6 @@ class ProductDetail extends React.Component {
         authAxios
             .post(addToCartURL, { slug })
             .then(res => {
-                console.log(res.data)
                 this.props.fetchCart()
                 this.setState({ loading: false })
             })
@@ -104,9 +99,15 @@ class ProductDetail extends React.Component {
                                                 <span className='cinema'>{item.genre}</span>
                                             </Card.Meta>
                                             <Card.Description>
-                                                Written by {item.author_name}
+                                                <Card.Content extra
+                                                    onClick={() => this.props.history.push(`/author-list/${item.author_name}`)}>
+                                                    <a>
+                                                        Written by {item.author_name}
+                                                    </a>
+                                                </Card.Content>
                                             </Card.Description>
                                         </Card.Content>
+
                                         <Card.Content extra>
                                             <a>
                                                 <Rating icon='star' defaultRating={0} maxRating={10} />

@@ -302,14 +302,14 @@ class CheckoutForm extends Component {
 
         return (
             < div >
-                {error && (
+                {/*                 {error && (
                     <Message
                         error
                         header="There was some errors with your submission"
                         content={JSON.stringify(error)}
                     />
                 )
-                }
+                } */}
                 {
                     loading && (
                         <Segment>
@@ -426,12 +426,12 @@ class CheckoutForm extends Component {
 
                                 <CardElement />
 
-                                {error &&
+                                {/*         {error &&
                                     <Message negative>
                                         <Message.Header>Your payment was unsuccessful!</Message.Header>
                                         <p>{JSON.stringify(error)}</p>
                                     </Message>
-                                }
+                                } */}
                                 {success &&
                                     <Message positive>
                                         <Message.Header>Your payment was successful!</Message.Header>

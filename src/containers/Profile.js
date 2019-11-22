@@ -392,9 +392,9 @@ class Profile extends React.Component {
         const { activeItem, error, loading, addresses, countries, selectedAddress, userID } = this.state
 
         const { isAuthenticated } = this.props
-        /*         if (!isAuthenticated) {
-                    return <Redirect to="/login" />
-                } */
+        if (!isAuthenticated) {
+            return <Redirect to="/login" />
+        }
 
         return (
             <Container>

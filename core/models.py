@@ -109,6 +109,47 @@ class Item(models.Model):
         })
 
 
+class SavedForLaterItem(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL,
+                             on_delete=models.CASCADE)
+    # book name
+    title = models.CharField(max_length=100)
+    price = models.FloatField()
+    discount_price = models.FloatField(blank=True, null=True)
+    # book genre
+    genre = models.TextField(blank=True, default='')
+    label = models.TextField(blank=True, default='')
+    slug = models.SlugField()
+    # book description
+    description = models.TextField()
+    image = models.TextField(blank=True, default='')
+    # book publishing info
+    publisher_info = models.TextField(blank=True, null=True)
+    author_name = models.TextField(blank=True, null=True)
+    author_bio = models.TextField(blank=True, null=True)
+
+    # def __str__(self):
+    # return self.user.username
+
+    def __str__(self):
+        return self.title
+
+    def get_absolute_url(self):
+        return reverse("core:product", kwargs={
+            'slug': self.slug
+        })
+
+    def get_add_to_cart_url(self):
+        return reverse("core:add-to-cart", kwargs={
+            'slug': self.slug
+        })
+
+    def get_remove_from_cart_url(self):
+        return reverse("core:remove-from-cart", kwargs={
+            'slug': self.slug
+        })
+
+
 class OrderItem(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL,
                              on_delete=models.CASCADE)

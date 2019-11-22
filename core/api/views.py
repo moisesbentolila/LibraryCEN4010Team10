@@ -11,10 +11,10 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
-from core.models import Item, OrderItem, Order
-from .serializers import ItemSerializer, OrderSerializer, AddressSerializer, PaymentSerializer
+from core.models import Item, OrderItem, Order, SavedForLaterItem
+from .serializers import ItemSerializer, OrderSerializer, AddressSerializer, PaymentSerializer, SavedForLaterItemSerializer
 from core.models import Item, OrderItem, Order, Address, Payment, Coupon, Refund, UserProfile
-
+from rest_framework.pagination import PageNumberPagination
 
 import stripe
 
@@ -30,12 +30,64 @@ class ItemListView(ListAPIView):
     permission_classes = (AllowAny,)
     serializer_class = ItemSerializer
     queryset = Item.objects.all()
+    pagination_class = PageNumberPagination
+
+
+class SavedForLaterListView(ListAPIView):
+    permission_classes = (IsAuthenticated,)
+    serializer_class = SavedForLaterItemSerializer
+
+    def get_queryset(self):
+        # initial query set
+        qs = SavedForLaterItem.objects.all()
+        queryset = qs.filter(user=self.request.user)
+        return queryset
+
+
+class SavedForLaterItemCreateView(CreateAPIView):
+    permission_classes = (IsAuthenticated,)
+    serializer_class = SavedForLaterItemSerializer
+    queryset = SavedForLaterItem.objects.all()
+
+
+class SavedForLaterItemDeleteView(DestroyAPIView):
+    permission_classes = (IsAuthenticated,)
+    queryset = SavedForLaterItem.objects.all()
 
 
 class ItemDetailView(RetrieveAPIView):
     permission_classes = (AllowAny,)
     serializer_class = ItemSerializer
     queryset = Item.objects.all()
+
+
+class AuthorListView(ListAPIView):
+    permission_classes = (AllowAny,)
+    serializer_class = ItemSerializer
+
+    def get_queryset(self):
+        author_name = self.request.query_params.get('author_name', None)
+        # initial query set
+        qs = Item.objects.all()
+
+        if author_name is None:
+            return qs
+        return qs.filter(author_name=author_name)
+
+    # pagination_class = PageNumberPagination
+
+
+class AddressListView(ListAPIView):
+    permission_classes = (IsAuthenticated,)
+    serializer_class = AddressSerializer
+
+    def get_queryset(self):
+        address_type = self.request.query_params.get('address_type', None)
+        # initial query set
+        qs = Address.objects.all()
+        if address_type is None:
+            return qs
+        return qs.filter(user=self.request.user, address_type=address_type)
 
 
 class OrderQuantityUpdateView(APIView):
@@ -234,19 +286,6 @@ class AddCouponView(APIView):
         order.coupon = coupon
         order.save()
         return Response(status=HTTP_200_OK)
-
-
-class AddressListView(ListAPIView):
-    permission_classes = (IsAuthenticated,)
-    serializer_class = AddressSerializer
-
-    def get_queryset(self):
-        address_type = self.request.query_params.get('address_type', None)
-        # initial query set
-        qs = Address.objects.all()
-        if address_type is None:
-            return qs
-        return qs.filter(user=self.request.user, address_type=address_type)
 
 
 class AddressCreateView(CreateAPIView):

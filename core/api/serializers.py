@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from core.models import Address, Item, Order, OrderItem, Coupon, Payment
+from core.models import Address, Item, Order, OrderItem, Coupon, Payment, SavedForLaterItem
 from django_countries.serializer_fields import CountryField
 
 
@@ -44,6 +44,27 @@ class ItemSerializer(serializers.ModelSerializer):
 
     def get_label(self, obj):
         return obj.get_label_display()
+
+
+class SavedForLaterItemSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = SavedForLaterItem
+        fields = (
+            'user',
+            'id',
+            'title',
+            'price',
+            'discount_price',
+            'genre',
+            'label',
+            'slug',
+            'description',
+            'image',
+            'publisher_info',
+            'author_bio',
+            'author_name',
+        )
 
 
 class OrderItemSerializer(serializers.ModelSerializer):

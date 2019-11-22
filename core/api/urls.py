@@ -4,7 +4,9 @@ from .views import (ItemListView, AddToCartView,
                     OrderQuantityUpdateView, PaymentView,
                     AddCouponView, ItemDetailView, AddressListView,
                     AddressCreateView, CountryListView, UserIDView,
-                    AddressUpdateView, AddressDeleteView, PaymentListView)
+                    AddressUpdateView, AddressDeleteView, PaymentListView,
+                    SavedForLaterListView, SavedForLaterItemCreateView,
+                    SavedForLaterItemDeleteView, AuthorListView)
 
 urlpatterns = [
     path('user-id/', UserIDView.as_view(), name='user-id'),
@@ -16,7 +18,16 @@ urlpatterns = [
     path('addresses/<pk>/delete/',
          AddressDeleteView.as_view(), name='address-delete'),
     path('products/', ItemListView.as_view(), name='product-list'),
+    path('saved-for-later/', SavedForLaterListView.as_view(),
+         name='saved-for-later'),
+    path('add-to-saved-item-list/', SavedForLaterItemCreateView.as_view(),
+         name='add-to-saved-item-list'),
+    path('saved-for-later-item/<pk>/delete/',
+         SavedForLaterItemDeleteView.as_view(), name='saved-for-later-item-delete'),
     path('products/<pk>/', ItemDetailView.as_view(), name='product-detail'),
+    path('author-list/<pk>/', AuthorListView.as_view(), name='author-list'),
+    path('author-list/',
+         AuthorListView.as_view(), name='author-list'),
     path('add-to-cart/', AddToCartView.as_view(), name='add-to-cart'),
     path('order-summary/', OrderDetailView.as_view(), name='order-summary'),
     path('order-items/<pk>/delete/',
