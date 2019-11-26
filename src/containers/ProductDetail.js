@@ -4,9 +4,9 @@ import axios from 'axios'
 import { connect } from 'react-redux'
 import {
     Button, Container, Card, Rating, Icon, Image, Item, Label,
-    Modal, Message, Segment, Header, Grid, Popup,
+    Modal, Message, Segment, Header, Grid, Popup, Comment, Form
 } from 'semantic-ui-react'
-import { ProductDetailURL, addToCartURL } from '../constants'
+import { ProductDetailURL, addToCartURL, ItemCommentListURL } from '../constants'
 import { authAxios } from '../utils'
 import { fetchCart } from '../store/actions/cart'
 
@@ -16,6 +16,7 @@ class ProductDetail extends React.Component {
         loading: false,
         error: null,
         data: [],
+        comments: [],
         activeIndex: 0
     }
 
@@ -29,11 +30,28 @@ class ProductDetail extends React.Component {
         axios.get(ProductDetailURL(params.productID))
             .then(res => {
                 this.setState({ data: res.data, loading: false })
+                //fetch the comments made about the item
+                this.handleFetchItemComments(res.data.title)
             })
             .catch(err => {
                 this.setState({ error: err, loading: false })
             })
     }
+
+    handleFetchItemComments = bookTitle => {
+        const { data } = this.state
+        this.setState({ loading: true })
+        axios
+            //we loaded the item with handleFetchItem, now we get the title of the item from data.title
+            .get(ItemCommentListURL(bookTitle))
+            .then(res => {
+                this.setState({ comments: res.data.results, loading: false })
+            })
+            .catch(err => {
+                this.setState({ error: err })
+            })
+    }
+
 
     handleAddToCart = slug => {
         this.setState({ loading: true })
@@ -59,8 +77,12 @@ class ProductDetail extends React.Component {
 
 
     render() {
-        const { data, error, loading } = this.state
+        const { data, error, loading, comments } = this.state
         const item = data
+        const userComments = comments
+        const { match: { params } } = this.props
+        console.log(comments)
+
 
         return (
             <Container>
@@ -95,9 +117,12 @@ class ProductDetail extends React.Component {
                                         </Label>
                                         <Card.Content>
                                             <Card.Header>{item.title} </Card.Header>
-                                            <Card.Meta>
-                                                <span className='cinema'>{item.genre}</span>
-                                            </Card.Meta>
+                                            <Card.Content extra
+                                                onClick={() => this.props.history.push(`/genre-list/${item.genre}`)}>
+                                                <a>
+                                                    {item.genre}
+                                                </a>
+                                            </Card.Content>
                                             <Card.Description>
                                                 <Card.Content extra
                                                     onClick={() => this.props.history.push(`/author-list/${item.author_name}`)}>
@@ -126,6 +151,34 @@ class ProductDetail extends React.Component {
                                                     <Icon name='plus cart' />
                                                 </Button>}
                                         />
+
+
+                                        <Card.Content extra>
+
+                                            <font size="5">Browse more books by...</font>
+
+                                        </Card.Content>
+
+                                        <Card.Content extra
+                                            onClick={() => this.props.history.push(`/author-list/${item.author_name}`)}>
+                                            <a>
+                                                <font size="4">Author</font>
+                                            </a>
+                                        </Card.Content>
+
+                                        <Card.Content extra
+                                            onClick={() => this.props.history.push(`/title-list/${item.title}`)}>
+                                            <a>
+                                                <font size="4">Title</font>
+                                            </a>
+                                        </Card.Content>
+
+                                        <Card.Content extra
+                                            onClick={() => this.props.history.push(`/price-list/${item.price}`)}>
+                                            <a>
+                                                <font size="4">Price</font>
+                                            </a>
+                                        </Card.Content>
                                     </Card>
                                 </Grid.Column>
 
@@ -150,6 +203,39 @@ class ProductDetail extends React.Component {
                         </Grid>
 
                     </Item>
+                </Segment>
+                {/* user comments */}
+                <Segment>
+                    <Comment.Group>
+                        <Header as='h3' dividing>
+                            Comments
+                        </Header>
+
+                        {userComments.map((item, i) => {
+                            console.log(item.user)
+                            return (
+                                <Comment>
+                                    <Comment.Avatar src='/images/avatar/small/matt.jpg' />
+                                    <Comment.Content>
+                                        <Comment.Author as='a'>{item.user}</Comment.Author>
+                                        <Comment.Metadata>
+                                            <div>{item.timestamp}</div>
+                                        </Comment.Metadata>
+                                        <Comment.Text>{item.content}</Comment.Text>
+                                        <Comment.Actions>
+                                            <Comment.Action>Reply</Comment.Action>
+                                        </Comment.Actions>
+                                    </Comment.Content>
+                                </Comment>
+                            )
+                        })}
+
+
+                        <Form reply>
+                            <Form.TextArea />
+                            <Button content='Add Reply' labelPosition='left' icon='edit' primary />
+                        </Form>
+                    </Comment.Group>
                 </Segment>
 
 

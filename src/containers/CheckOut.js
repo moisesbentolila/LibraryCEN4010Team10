@@ -151,7 +151,7 @@ class CheckoutForm extends Component {
             .get(addressListURL('B'))
             .then(res => {
                 this.setState({
-                    billingAddresses: res.data.map(a => {
+                    billingAddresses: res.data.results.map(a => {
                         return {
                             key: a.id,
                             text: `${a.street_address}, ${a.apartment_address}, ${a.country}`,
@@ -159,7 +159,7 @@ class CheckoutForm extends Component {
                         }
                     }),
                     // the billing address chosen for the order
-                    selectedBillingAddress: this.handleGetDefaultAddress(res.data),
+                    selectedBillingAddress: this.handleGetDefaultAddress(res.data.results),
                     loading: false
                 })
             })
@@ -176,7 +176,7 @@ class CheckoutForm extends Component {
             .then(res => {
                 // map data for each address
                 this.setState({
-                    shippingAddresses: res.data.map(a => {
+                    shippingAddresses: res.data.results.map(a => {
                         return {
                             key: a.id,
                             text: `${a.street_address}, ${a.apartment_address}, ${a.country}`,
@@ -184,7 +184,7 @@ class CheckoutForm extends Component {
                         }
                     }),
                     // the shipping address chosen for the order
-                    selectedShippingAddress: this.handleGetDefaultAddress(res.data),
+                    selectedShippingAddress: this.handleGetDefaultAddress(res.data.results),
                     loading: false
                 })
             })

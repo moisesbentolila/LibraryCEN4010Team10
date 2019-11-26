@@ -5,12 +5,16 @@ const apiURL = "/api"
 
 export const endpoint = `${localhost}${apiURL}`
 
+export const GenreListURL = genre => `${endpoint}/genre-list/${genre}/?genre=${genre}`
+export const TitleListURL = title => `${endpoint}/title-list/${title}/?title=${title}`
+export const PriceListURL = price => `${endpoint}/price-list/${price}/?price=${price}`
 export const userIDURL = `${endpoint}/user-id/`
 export const countryListURL = `${endpoint}/countries/`
 export const ProductListURL = pageNumber => `${endpoint}/products/?page=${pageNumber}`
 export const SavedForLaterListURL = `${endpoint}/saved-for-later/`
 export const SavedForLaterItemDeleteURL = id => `${endpoint}/saved-for-later-item/${id}/delete/`
 export const ProductDetailURL = id => `${endpoint}/products/${id}/`
+export const ItemCommentListURL = book_title => `${endpoint}/comments/?book_title=${book_title}`
 export const AuthorListURL = author_name => `${endpoint}/author-list/${author_name}/?author_name=${author_name}`
 export const addToCartURL = `${endpoint}/add-to-cart/`
 export const orderSummaryURL = `${endpoint}/order-summary/`

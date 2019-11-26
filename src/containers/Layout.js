@@ -75,11 +75,10 @@ class CustomLayout extends React.Component {
         </Sticky>
 
         {/* use to fix footer issue, vertical makes it not visible */}
-        {/*
-        <Segment style={{ minHeight: 2000 }} vertical> </Segment>
-        */}
+        <Segment style={{ minHeight: 2000 }} vertical>
+          {this.props.children}
+        </Segment>
 
-        {this.props.children}
 
         <Segment
           inverted

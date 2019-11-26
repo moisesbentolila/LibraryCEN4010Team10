@@ -5,7 +5,7 @@ import {
     Button, Container, Icon, Item, Label, Message, Segment, Accordion, Header, Pagination,
     Grid, Divider, Popup, Form, Card, Modal, Image, Rating
 } from 'semantic-ui-react'
-import { ProductListURL, addToCartURL } from '../constants'
+import { ProductListURL, addToCartURL, PriceListURL } from '../constants'
 import { authAxios } from '../utils'
 import { fetchCart } from '../store/actions/cart'
 
@@ -26,9 +26,6 @@ class ProductList extends React.Component {
 
     handleTotalPageCount = (totalProductsCount, itemsPerPage) => {
         //if item count divided by items per page has NO remainder
-
-
-
         if (totalProductsCount % itemsPerPage === 0) {
 
             const newPageCount = totalProductsCount / itemsPerPage
@@ -45,13 +42,14 @@ class ProductList extends React.Component {
 
     handlePaginationChange = (e, { activePage }) => {
         this.setState({ activePage })
-        this.handleFetchProductList(activePage)
+        //this.handleFetchAuthorList(activePage)
     }
 
 
     componentDidMount() {
         const { defaultActivePage } = this.state
-        this.handleFetchProductList(defaultActivePage)
+        this.handleFetchPriceList()
+        //this.handleFetchAuthorList(defaultActivePage)
         this.hadleFetchItemsPerPage()
         this.hadleFetchItemTotalCount()
     }
@@ -77,6 +75,20 @@ class ProductList extends React.Component {
                 this.setState({ error: err, loading: false })
             })
     }
+
+    handleFetchPriceList = () => {
+        const { match: { params } } = this.props
+        this.setState({ loading: true })
+        authAxios
+            .get(PriceListURL(params.price))
+            .then(res => {
+                this.setState({ data: res.data.results, loading: false })
+            })
+            .catch(err => {
+                this.setState({ error: err })
+            })
+    }
+
 
     handleFetchProductList = pageNumber => {
         this.setState({ loading: true })
@@ -108,14 +120,15 @@ class ProductList extends React.Component {
 
     render() {
         const { data, error, loading, activePage,
-            itemsPerPage, submittedItemsPerPage, totalPages } = this.state
+            itemsPerPage, submittedItemsPerPage, totalPages, testData } = this.state
+
 
         return (
             <Container>
                 {/*segment padding for better page visibility*/}
                 <Segment style={{ padding: "1em 0em" }} vertical>
                     <Header as='h1'>
-                        Product List
+                        Books by Price
                     </Header>
                 </Segment>
 

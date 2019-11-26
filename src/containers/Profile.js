@@ -31,7 +31,7 @@ class PaymentHistory extends React.Component {
             .get(paymentListURL)
             .then(res => {
                 this.setState({
-                    payments: res.data
+                    payments: res.data.results
                 })
             })
             .catch(err => {
@@ -374,7 +374,7 @@ class Profile extends React.Component {
             // if billing info requested, get billing address, otherwise, shipping address
             .get(addressListURL(activeItem === 'Billing Info' ? 'B' : 'S'))
             .then(res => {
-                this.setState({ addresses: res.data, loading: false })
+                this.setState({ addresses: res.data.results, loading: false })
             })
             .catch(err => {
                 this.setState({ error: err })
