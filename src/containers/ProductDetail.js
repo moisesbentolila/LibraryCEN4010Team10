@@ -79,10 +79,8 @@ class ProductDetail extends React.Component {
     render() {
         const { data, error, loading, comments } = this.state
         const item = data
+        const ratings = data
         const userComments = comments
-        const { match: { params } } = this.props
-        console.log(comments)
-
 
         return (
             <Container>
@@ -117,12 +115,9 @@ class ProductDetail extends React.Component {
                                         </Label>
                                         <Card.Content>
                                             <Card.Header>{item.title} </Card.Header>
-                                            <Card.Content extra
-                                                onClick={() => this.props.history.push(`/genre-list/${item.genre}`)}>
-                                                <a>
-                                                    {item.genre}
-                                                </a>
-                                            </Card.Content>
+                                            <Card.Meta>
+                                                <span className='cinema'>{item.genre}</span>
+                                            </Card.Meta>
                                             <Card.Description>
                                                 <Card.Content extra
                                                     onClick={() => this.props.history.push(`/author-list/${item.author_name}`)}>
@@ -135,7 +130,20 @@ class ProductDetail extends React.Component {
 
                                         <Card.Content extra>
                                             <a>
-                                                <Rating icon='star' defaultRating={0} maxRating={10} />
+                                                <Rating icon='star'
+                                                    /* 
+                                                    With this notation, you’ll never run into Cannot read property ‘.rating__avg’ or '.avg_rating' of undefined. 
+                                                    You basically check if object exists, if not, you create an empty object on the fly. This way, the next level key 
+                                                    will always be accessed from an object that exists or an empty object, but never from undefined.
+                                                    */
+                                                    rating={((item || {}).avg_rating || {}).rating__avg}
+                                                    maxRating={10}
+                                                    disabled
+                                                />
+                                                {/* Show ratings if not null or NaN */}
+                                                {((item || {}).avg_rating || {}).rating__avg && <Label color='white'>
+                                                    {Number.parseFloat(((item || {}).avg_rating || {}).rating__avg).toFixed(2)}
+                                                </Label>}
                                                 <br></br>Customer Reviews
                                             </a>
                                         </Card.Content>
@@ -151,34 +159,6 @@ class ProductDetail extends React.Component {
                                                     <Icon name='plus cart' />
                                                 </Button>}
                                         />
-
-
-                                        <Card.Content extra>
-
-                                            <font size="5">Browse more books by...</font>
-
-                                        </Card.Content>
-
-                                        <Card.Content extra
-                                            onClick={() => this.props.history.push(`/author-list/${item.author_name}`)}>
-                                            <a>
-                                                <font size="4">Author</font>
-                                            </a>
-                                        </Card.Content>
-
-                                        <Card.Content extra
-                                            onClick={() => this.props.history.push(`/title-list/${item.title}`)}>
-                                            <a>
-                                                <font size="4">Title</font>
-                                            </a>
-                                        </Card.Content>
-
-                                        <Card.Content extra
-                                            onClick={() => this.props.history.push(`/price-list/${item.price}`)}>
-                                            <a>
-                                                <font size="4">Price</font>
-                                            </a>
-                                        </Card.Content>
                                     </Card>
                                 </Grid.Column>
 
@@ -212,14 +192,15 @@ class ProductDetail extends React.Component {
                         </Header>
 
                         {userComments.map((item, i) => {
-                            console.log(item.user)
+
                             return (
                                 <Comment>
-                                    <Comment.Avatar src='/images/avatar/small/matt.jpg' />
+                                    {/* <Comment.Avatar src='/images/avatar/small/matt.jpg' /> */}
+                                    <Icon name='user' size='big' />
                                     <Comment.Content>
-                                        <Comment.Author as='a'>{item.user}</Comment.Author>
+                                        <Comment.Author as='a'>{item.username}</Comment.Author>
                                         <Comment.Metadata>
-                                            <div>{item.timestamp}</div>
+                                            <div>{new Date(item.timestamp).toUTCString()}</div>
                                         </Comment.Metadata>
                                         <Comment.Text>{item.content}</Comment.Text>
                                         <Comment.Actions>

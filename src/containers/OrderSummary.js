@@ -1,7 +1,7 @@
 import React from 'react'
 import {
     Button, Container, Header, Icon, Label, Table, Image, Segment, Message,
-    Item, Grid, Divider, Pagination, Popup, Form, Card, Rating
+    Popup, Card,
 } from 'semantic-ui-react'
 import { authAxios } from '../utils'
 import {
@@ -9,7 +9,7 @@ import {
     SavedForLaterListURL, addToSavedItemListURL, userIDURL, SavedForLaterItemDeleteURL
 } from '../constants'
 import { connect } from "react-redux";
-import { Link, Redirect } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { fetchCart } from '../store/actions/cart'
 
 
@@ -184,7 +184,7 @@ class OrderSummary extends React.Component {
                                         <Table.Cell>
                                             {i + 1}
                                         </Table.Cell>
-                                        <Table.Cell>
+                                        <Table.Cell width={7}>
                                             {orderItem.item_obj.title}
                                             <Image size="tiny" src={`http://127.0.0.1:8000${orderItem.item_obj.image}`} />
                                         </Table.Cell>
@@ -204,11 +204,10 @@ class OrderSummary extends React.Component {
                                                 hideOnScroll
                                                 position='top center'
                                                 trigger={
-                                                    <Button primary floated='left'
+                                                    <Button primary floated='center'
                                                         onClick=
                                                         {
                                                             () => this.handleCreateSavedItem(orderItem.item_obj, orderItem.id)
-                                                            //, () => this.handleRemoveItem(orderItem.id)
                                                         }
                                                     >
                                                         Save For Later

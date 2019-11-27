@@ -4,7 +4,8 @@ from django.db import models
 from django.db.models import Sum
 from django.shortcuts import reverse
 from django_countries.fields import CountryField
-
+from django.core.validators import MinValueValidator, MaxValueValidator
+from django.db.models import Avg
 
 GENRE_CHOICES = (
     # Fiction
@@ -108,14 +109,35 @@ class Item(models.Model):
             'slug': self.slug
         })
 
+    def get_avg_rating(self):
+        rating = Rating.objects.filter(item=self)
+        return rating.aggregate(Avg('rating'))
+
 
 class Comment(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL,
                              on_delete=models.CASCADE)
+    username = models.CharField(max_length=100)
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
     book_title = models.CharField(max_length=100)
     timestamp = models.DateTimeField(auto_now_add=True)
     content = models.TextField()
+
+    def __str__(self):
+        return self.item.title
+
+
+class Rating(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL,
+                             on_delete=models.CASCADE, related_name='item_ratings')
+    username = models.CharField(max_length=100)
+    item = models.ForeignKey(Item, on_delete=models.CASCADE)
+    book_title = models.CharField(max_length=100)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    rating = models.IntegerField(
+        null=False, blank=False,
+        validators=[MinValueValidator(1),
+                    MaxValueValidator(10)])
 
     def __str__(self):
         return self.item.title

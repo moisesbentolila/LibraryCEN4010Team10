@@ -210,7 +210,6 @@ class AddressForm extends React.Component {
             .catch(err => {
                 this.setState({ error: err })
             })
-        console.log(formData)
     }
 
     render() {
@@ -294,6 +293,7 @@ class Profile extends React.Component {
         addresses: [],
         countries: [],
         userID: null,
+        username: null,
         selectedAddress: null
     }
 
@@ -348,7 +348,10 @@ class Profile extends React.Component {
         authAxios
             .get(userIDURL)
             .then(res => {
-                this.setState({ userID: res.data.userID })
+                this.setState({
+                    userID: res.data.userID,
+                    username: res.data.username
+                })
             })
             .catch(err => {
                 this.setState({ error: err })
@@ -389,7 +392,8 @@ class Profile extends React.Component {
 
 
     render() {
-        const { activeItem, error, loading, addresses, countries, selectedAddress, userID } = this.state
+        const { activeItem, error, loading, addresses,
+            countries, selectedAddress, userID, username } = this.state
 
         const { isAuthenticated } = this.props
         if (!isAuthenticated) {
@@ -401,7 +405,7 @@ class Profile extends React.Component {
                 {/*segment padding for better page visibility*/}
                 <Segment style={{ padding: "1em 0em" }} vertical>
                     <Header as='h1'>
-                        User Information
+                        User Information: {username}
                     </Header>
                 </Segment>
                 {error && (
@@ -456,8 +460,9 @@ class Profile extends React.Component {
                                     (activeItem === 'Shipping Info' && addresses.length > 0) ?
 
                                     addresses.map(a => {
+
                                         return (
-                                            <React.Fragment>
+                                            < React.Fragment >
                                                 <Card.Group key={a.id}>
                                                     <Card>
                                                         <Card.Content>
@@ -468,7 +473,16 @@ class Profile extends React.Component {
                                                                     Default
                                                                 </Label>}
                                                             </Card.Header>
-                                                            <Card.Meta>State {a.zip}, {a.country}</Card.Meta>
+                                                            <Card.Meta>
+                                                                {a.zip},
+                                                                {/*                               
+                                                                With this notation, you’ll never run into Cannot read property ‘.text’ of undefined. You basically check if object exists, 
+                                                                if not, you create an empty object on the fly. This way, the next level key will always be accessed from an object that 
+                                                                exists or an empty object, but never from undefined. */}
+
+                                                                {/* find the country name using the country code, a.country is the country code, .text will give the country text name */}
+                                                                {(countries.find(object => object.key === a.country) || {}).text} ({a.country})
+                                                            </Card.Meta>
                                                         </Card.Content>
                                                         <Card.Content extra>
                                                             <Button
@@ -487,7 +501,8 @@ class Profile extends React.Component {
 
 
                                                 {/* if we have a selected address and are updating, show this form */}
-                                                {selectedAddress === a &&
+                                                {
+                                                    selectedAddress === a &&
                                                     <React.Fragment>
                                                         <Divider />
                                                         <Header>Update the address above</Header>
@@ -560,7 +575,6 @@ class Profile extends React.Component {
                                                             userID={userID}
                                                             callback={this.handleCallBack} />
                                                     </React.Fragment>
-
                                                 )
                                                 :
                                                 activeItem === 'Shipping Info' ?
@@ -586,7 +600,7 @@ class Profile extends React.Component {
                         </Grid.Row>
                     </Grid>
                 </Segment>
-            </Container>
+            </Container >
         )
     }
 }

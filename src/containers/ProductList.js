@@ -86,6 +86,7 @@ class ProductList extends React.Component {
             .then(res => {
                 this.handleTotalPageCount(res.data.count, itemsPerPage)
                 this.setState({ data: res.data.results, loading: false })
+
             })
             .catch(err => {
                 this.setState({ error: err, loading: false })
@@ -131,8 +132,9 @@ class ProductList extends React.Component {
                 <Segment loading={loading}>
                     <Card.Group itemsPerRow={3}>
                         {data.map((item, i) => {
+
                             return (
-                                <React.Fragment>
+                                < React.Fragment >
                                     <Card centered>
 
                                         <Image
@@ -157,7 +159,19 @@ class ProductList extends React.Component {
                                         </Card.Content>
                                         <Card.Content extra>
                                             <a>
-                                                <Rating icon='star' defaultRating={0} maxRating={10} />
+                                                <Rating icon='star'
+                                                    rating={item.avg_rating.rating__avg}
+                                                    maxRating={10}
+                                                    disabled />
+
+                                                {/* With this notation, you’ll never run into Cannot read property ‘.rating__avg’ or '.avg_rating' of undefined. 
+                                                    You basically check if object exists, if not, you create an empty object on the fly. This way, the next level key 
+                                                    will always be accessed from an object that exists or an empty object, but never from undefined. */}
+
+                                                {/* Show ratings if not null or NaN */}
+                                                {((item || {}).avg_rating || {}).rating__avg && <Label color='white'>
+                                                    {Number.parseFloat(((item || {}).avg_rating || {}).rating__avg).toFixed(2)}
+                                                </Label>}
                                                 <br></br>Customer Reviews
                                             </a>
                                         </Card.Content>
@@ -198,7 +212,7 @@ class ProductList extends React.Component {
                     </Form>
                 </Segment>
 
-            </Container>
+            </Container >
         );
     }
 }

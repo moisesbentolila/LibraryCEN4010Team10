@@ -6,19 +6,9 @@ from .views import (ItemListView, AddToCartView,
                     AddressCreateView, CountryListView, UserIDView,
                     AddressUpdateView, AddressDeleteView, PaymentListView,
                     SavedForLaterListView, SavedForLaterItemCreateView,
-                    SavedForLaterItemDeleteView, AuthorListView, ItemCommentView,
-                    GenreListView, TitleListView, PriceListView)
+                    SavedForLaterItemDeleteView, AuthorListView, ItemCommentView, ItemRatingView)
 
 urlpatterns = [
-    path('genre-list/<pk>/', GenreListView.as_view(), name='genre-list'),
-    path('genre-list/',
-         GenreListView.as_view(), name='genre-list'),
-    path('title-list/<pk>/', TitleListView.as_view(), name='title-list'),
-    path('title-list/',
-         TitleListView.as_view(), name='title-list'),
-    path('price-list/<pk>/', PriceListView.as_view(), name='price-list'),
-    path('price-list/',
-         PriceListView.as_view(), name='price-list'),
     path('user-id/', UserIDView.as_view(), name='user-id'),
     path('countries/', CountryListView.as_view(), name='country-list'),
     path('addresses/', AddressListView.as_view(), name='address-list'),
@@ -36,6 +26,7 @@ urlpatterns = [
          SavedForLaterItemDeleteView.as_view(), name='saved-for-later-item-delete'),
     path('products/<pk>/', ItemDetailView.as_view(), name='product-detail'),
     path('comments/', ItemCommentView.as_view(), name='item-comments'),
+    path('ratings/', ItemRatingView.as_view(), name='item-ratings'),
     path('author-list/<pk>/', AuthorListView.as_view(), name='author-list'),
     path('author-list/',
          AuthorListView.as_view(), name='author-list'),

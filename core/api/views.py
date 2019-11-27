@@ -11,8 +11,8 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
-from core.models import Item, OrderItem, Order, SavedForLaterItem, Comment
-from .serializers import (ItemSerializer, OrderSerializer, ItemCommentSerializer,
+from core.models import Item, OrderItem, Order, SavedForLaterItem, Comment, Rating
+from .serializers import (ItemSerializer, OrderSerializer, ItemCommentSerializer, ItemRatingSerializer,
                           AddressSerializer, PaymentSerializer, SavedForLaterItemSerializer)
 from core.models import Item, OrderItem, Order, Address, Payment, Coupon, Refund, UserProfile
 from rest_framework.pagination import PageNumberPagination
@@ -22,52 +22,11 @@ import stripe
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
 
-class GenreListView(ListAPIView):
-    permission_classes = (AllowAny,)
-    serializer_class = ItemSerializer
-
-    def get_queryset(self):
-        genre = self.request.query_params.get('genre', None)
-        # initial query set
-        qs = Item.objects.all()
-
-        if genre is None:
-            return qs
-        # filtering out all results for some reason
-        return qs.filter(genre='AA')
-
-
-class TitleListView(ListAPIView):
-    permission_classes = (AllowAny,)
-    serializer_class = ItemSerializer
-
-    def get_queryset(self):
-        # author_name = self.request.query_params.get('author_name', None)
-        # initial query set
-        qs = Item.objects.all()
-
-        # if author_name is None:
-        #    return qs
-        return Item.objects.all().order_by('title')
-
-
-class PriceListView(ListAPIView):
-    permission_classes = (AllowAny,)
-    serializer_class = ItemSerializer
-
-    def get_queryset(self):
-        # author_name = self.request.query_params.get('author_name', None)
-        # initial query set
-        qs = Item.objects.all()
-
-        # if author_name is None:
-        #    return qs
-        return Item.objects.all().order_by('-price')
-
-
 class UserIDView(APIView):
     def get(self, request, *args, **kwargs):
-        return Response({'userID': request.user.id}, status=HTTP_200_OK)
+        return Response({'userID': request.user.id,
+                         'username': request.user.username},
+                        status=HTTP_200_OK)
 
 
 class ItemListView(ListAPIView):
@@ -113,6 +72,19 @@ class ItemCommentView(ListAPIView):
         book_title = self.request.query_params.get('book_title', None)
         # initial query set
         qs = Comment.objects.all()
+        if book_title is None:
+            return qs
+        return qs.filter(book_title=book_title)
+
+
+class ItemRatingView(ListAPIView):
+    permission_classes = (AllowAny,)
+    serializer_class = ItemRatingSerializer
+
+    def get_queryset(self):
+        book_title = self.request.query_params.get('book_title', None)
+        # initial query set
+        qs = Rating.objects.all()
         if book_title is None:
             return qs
         return qs.filter(book_title=book_title)

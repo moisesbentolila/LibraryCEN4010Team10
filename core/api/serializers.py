@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from core.models import Address, Item, Order, OrderItem, Coupon, Payment, SavedForLaterItem, Comment
+from core.models import (Address, Item, Order, OrderItem, Coupon,
+                         Payment, SavedForLaterItem, Comment, Rating)
 from django_countries.serializer_fields import CountryField
 
 
@@ -21,6 +22,7 @@ class CouponSerializer(serializers.ModelSerializer):
 class ItemSerializer(serializers.ModelSerializer):
     genre = serializers.SerializerMethodField()
     label = serializers.SerializerMethodField()
+    avg_rating = serializers.SerializerMethodField()
 
     class Meta:
         model = Item
@@ -37,6 +39,7 @@ class ItemSerializer(serializers.ModelSerializer):
             'publisher_info',
             'author_bio',
             'author_name',
+            'avg_rating'
         )
 
     def get_genre(self, obj):
@@ -44,6 +47,9 @@ class ItemSerializer(serializers.ModelSerializer):
 
     def get_label(self, obj):
         return obj.get_label_display()
+
+    def get_avg_rating(self, obj):
+        return obj.get_avg_rating()
 
 
 class ItemCommentSerializer(serializers.ModelSerializer):
@@ -53,6 +59,7 @@ class ItemCommentSerializer(serializers.ModelSerializer):
         model = Comment
         fields = (
             'user',
+            'username',
             'item',
             'timestamp',
             'content',
@@ -61,6 +68,30 @@ class ItemCommentSerializer(serializers.ModelSerializer):
 
     def get_book_title(self, obj):
         return ItemSerializer(obj.item).data.title
+
+    def get_username(self, obj):
+        return ItemSerializer(obj.user).data.username
+
+
+class ItemRatingSerializer(serializers.ModelSerializer):
+    item = StringSerializer()
+
+    class Meta:
+        model = Rating
+        fields = (
+            'user',
+            'username',
+            'item',
+            'timestamp',
+            'rating',
+            'book_title'
+        )
+
+    def get_book_title(self, obj):
+        return ItemSerializer(obj.item).data.title
+
+    def get_username(self, obj):
+        return ItemSerializer(obj.user).data.username
 
 
 class SavedForLaterItemSerializer(serializers.ModelSerializer):

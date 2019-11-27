@@ -79,7 +79,7 @@ class ProductList extends React.Component {
     handleFetchAuthorList = () => {
         const { match: { params } } = this.props
         this.setState({ loading: true })
-        authAxios
+        axios
             .get(AuthorListURL(params.author_name))
             .then(res => {
                 this.setState({ data: res.data.results, loading: false })
@@ -120,7 +120,7 @@ class ProductList extends React.Component {
 
     render() {
         const { data, error, loading, activePage,
-            itemsPerPage, submittedItemsPerPage, totalPages, testData } = this.state
+            itemsPerPage, submittedItemsPerPage, totalPages } = this.state
 
 
         return (
@@ -170,7 +170,20 @@ class ProductList extends React.Component {
                                         </Card.Content>
                                         <Card.Content extra>
                                             <a>
-                                                <Rating icon='star' defaultRating={0} maxRating={10} />
+                                                <Rating icon='star'
+                                                    /* 
+                                                    With this notation, you’ll never run into Cannot read property ‘rating__avg’ of undefined. You basically check if user exists, 
+                                                    if not, you create an empty object on the fly. This way, the next level key will always be accessed from an object that 
+                                                    exists or an empty object, but never from undefined.
+                                                    */
+                                                    rating={((item || {}).avg_rating || {}).rating__avg}
+                                                    maxRating={10}
+                                                    disabled
+                                                />
+                                                {/* Show value if not null or NaN */}
+                                                {item.avg_rating && <Label color='white'>
+                                                    {Number.parseFloat(((item || {}).avg_rating || {}).rating__avg).toFixed(2)}
+                                                </Label>}
                                                 <br></br>Customer Reviews
                                             </a>
                                         </Card.Content>
