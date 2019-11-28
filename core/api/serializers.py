@@ -39,7 +39,9 @@ class ItemSerializer(serializers.ModelSerializer):
             'publisher_info',
             'author_bio',
             'author_name',
-            'avg_rating'
+            'avg_rating',
+            'bestseller',
+            'release_date'
         )
 
     def get_genre(self, obj):

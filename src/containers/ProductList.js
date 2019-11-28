@@ -111,6 +111,8 @@ class ProductList extends React.Component {
         const { data, error, loading, activePage,
             itemsPerPage, submittedItemsPerPage, totalPages } = this.state
 
+        console.log(data)
+
         return (
             <Container>
                 {/*segment padding for better page visibility*/}

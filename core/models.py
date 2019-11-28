@@ -90,6 +90,8 @@ class Item(models.Model):
     publisher_info = models.TextField(blank=True, null=True)
     author_name = models.TextField(blank=True, null=True)
     author_bio = models.TextField(blank=True, null=True)
+    bestseller = models.BooleanField(default=False)
+    release_date = models.DateTimeField()
 
     def __str__(self):
         return self.title
