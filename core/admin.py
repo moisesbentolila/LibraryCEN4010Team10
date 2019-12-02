@@ -10,6 +10,7 @@ def make_refund_accepted(modeladmin, request, queryset):
 
 make_refund_accepted.short_description = 'Update orders to refund granted'
 
+'''test'''
 
 class OrderAdmin(admin.ModelAdmin):
     list_display = ['user',
