@@ -21,6 +21,122 @@ import stripe
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
+genreDict = {
+    'Action and adventure': 'AA',
+    'Alternate history': 'AH',
+    'Anthology': 'AT',
+    'Childrens': 'CH',
+    'Comic book': 'CO',
+    'Crime': 'CR',
+    'Drama': 'DR',
+    'Fairytale': 'FT',
+    'Fantasy': 'FA',
+    'Graphic novel': 'GN',
+    'Historical fiction': 'HF',
+    'Horror': 'HO',
+    'Mystery': 'MY',
+    'Poetry': 'PO',
+    'Political thriller': 'PT',
+    'Romance': 'RO',
+    'Science fiction': 'SF',
+    'Short story': 'SS',
+    'Suspense': 'SP',
+    'Thriller': 'TH',
+
+    'Art': 'AR',
+    'Autobiography': 'AB',
+    'Biography': 'BO',
+    'Book review': 'BR',
+    'Cookbook': 'CB',
+    'Diary': 'DI',
+    'Encyclopedia': 'EN',
+    'Guide': 'GU',
+    'Health': 'HE',
+    'History': 'GU',
+    'Journal': 'JO',
+    'Math': 'MA',
+    'Memoir': 'ME',
+    'Religion, spirituality, and new age': 'RS',
+    'Textbook': 'TB',
+    'Review': 'RE',
+    'Science': 'SC',
+    'Self help': 'SH',
+    'Travel': 'TR'
+}
+
+
+class GenreListView(ListAPIView):
+    permission_classes = (AllowAny,)
+    serializer_class = ItemSerializer
+
+    def get_queryset(self):
+        genre = self.request.query_params.get('genre', None)
+        # initial query set
+        qs = Item.objects.all()
+        x = genreDict[genre]
+
+        if genre is None:
+            return qs
+        # filtering out all results for some reason
+        return qs.filter(genre=x)
+
+
+class BestsellerListView(ListAPIView):
+    permission_classes = (AllowAny,)
+    serializer_class = ItemSerializer
+
+    def get_queryset(self):
+        # genre = self.request.query_params.get('genre', None)
+        # initial query set
+        qs = Item.objects.all()
+
+        # if genre is None:
+        #     return qs
+        # filtering out all results for some reason
+        return qs.filter(bestseller=True)
+
+
+class TitleListView(ListAPIView):
+    permission_classes = (AllowAny,)
+    serializer_class = ItemSerializer
+
+    def get_queryset(self):
+        # author_name = self.request.query_params.get('author_name', None)
+        # initial query set
+        qs = Item.objects.all()
+
+        # if author_name is None:
+        #    return qs
+        return Item.objects.all().order_by('title')
+
+
+class DateListView(ListAPIView):
+    permission_classes = (AllowAny,)
+    serializer_class = ItemSerializer
+
+    def get_queryset(self):
+        # author_name = self.request.query_params.get('author_name', None)
+        # initial query set
+        qs = Item.objects.all()
+
+        # if author_name is None:
+        #    return qs
+        return Item.objects.all().order_by('-release_date')
+
+
+class PriceListView(ListAPIView):
+    permission_classes = (AllowAny,)
+    serializer_class = ItemSerializer
+
+    def get_queryset(self):
+        # author_name = self.request.query_params.get('author_name', None)
+        # initial query set
+        qs = Item.objects.all()
+
+        # if author_name is None:
+        #    return qs
+        return Item.objects.all().order_by('-price')
+
 
 class UserIDView(APIView):
     def get(self, request, *args, **kwargs):
@@ -95,13 +211,13 @@ class AuthorListView(ListAPIView):
     serializer_class = ItemSerializer
 
     def get_queryset(self):
-        author_name = self.request.query_params.get('author_name', None)
+        # author_name = self.request.query_params.get('author_name', None)
         # initial query set
         qs = Item.objects.all()
 
-        if author_name is None:
-            return qs
-        return qs.filter(author_name=author_name)
+        # if author_name is None:
+        #    return qs
+        return Item.objects.all().order_by('-author_name')
 
     # pagination_class = PageNumberPagination
 

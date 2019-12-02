@@ -128,7 +128,7 @@ class ProductList extends React.Component {
                 {/*segment padding for better page visibility*/}
                 <Segment style={{ padding: "1em 0em" }} vertical>
                     <Header as='h1'>
-                        Author Book List
+                        Browsing books by author
                     </Header>
                 </Segment>
 

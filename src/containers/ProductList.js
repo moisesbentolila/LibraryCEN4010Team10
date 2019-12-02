@@ -3,7 +3,7 @@ import axios from 'axios'
 import { connect } from 'react-redux'
 import {
     Button, Container, Icon, Item, Label, Message, Segment, Accordion, Header, Pagination,
-    Grid, Divider, Popup, Form, Card, Modal, Image, Rating
+    Grid, Divider, Popup, Form, Card, Modal, Image, Rating, Dropdown
 } from 'semantic-ui-react'
 import { ProductListURL, addToCartURL } from '../constants'
 import { authAxios } from '../utils'
@@ -121,6 +121,71 @@ class ProductList extends React.Component {
                         Product List
                     </Header>
                 </Segment>
+
+
+
+                <Segment>
+                    <h2>Browse books by:</h2>
+                    <Button onClick={() => this.props.history.push(`/author-list/`)}>Author</Button>
+                    <Button onClick={() => this.props.history.push(`/title-list/`)}>Title</Button>
+                    <Button onClick={() => this.props.history.push(`/price-list/`)}>Price</Button>
+                    <Button onClick={() => this.props.history.push(`/date-list/`)}>Release Date</Button>
+                    <Button onClick={() => this.props.history.push(`/seller-list/`)} >
+                        Bestsellers
+                    </Button>
+                    &emsp;&emsp;
+                    <Dropdown text='Fiction'>
+                        <Dropdown.Menu>
+                            <Dropdown.Item onClick={() => this.props.history.push(`/genre-list/Action and adventure`)} text='Action and adventure ' />
+                            <Dropdown.Item onClick={() => this.props.history.push(`/genre-list/Alternate history`)} text='Alternate history' />
+                            <Dropdown.Item onClick={() => this.props.history.push(`/genre-list/Anthology`)} text='Anthology' />
+                            <Dropdown.Item onClick={() => this.props.history.push(`/genre-list/Childrens`)} text='Childrens' />
+                            <Dropdown.Item onClick={() => this.props.history.push(`/genre-list/Comic book`)} text='Comic book' />
+                            <Dropdown.Item onClick={() => this.props.history.push(`/genre-list/Crime`)} text='Crime' />
+                            <Dropdown.Item onClick={() => this.props.history.push(`/genre-list/Drama`)} text='Fairytale' />
+                            <Dropdown.Item onClick={() => this.props.history.push(`/genre-list/Fantasy`)} text='Fantasy' />
+                            <Dropdown.Item onClick={() => this.props.history.push(`/genre-list/Graphic novel`)} text='Graphic novel' />
+                            <Dropdown.Item onClick={() => this.props.history.push(`/genre-list/Historical fiction`)} text='Historical fiction' />
+                            <Dropdown.Item onClick={() => this.props.history.push(`/genre-list/Horror`)} text='Horror' />
+                            <Dropdown.Item onClick={() => this.props.history.push(`/genre-list/Mystery`)} text='Mystery' />
+                            <Dropdown.Item onClick={() => this.props.history.push(`/genre-list/Poetry`)} text='Poetry' />
+                            <Dropdown.Item onClick={() => this.props.history.push(`/genre-list/Political thriller`)} text='Political thriller' />
+                            <Dropdown.Item onClick={() => this.props.history.push(`/genre-list/Romance`)} text='Romance' />
+                            <Dropdown.Item onClick={() => this.props.history.push(`/genre-list/Science fiction`)} text='Science fiction' />
+                            <Dropdown.Item onClick={() => this.props.history.push(`/genre-list/Short story`)} text='Short story' />
+                            <Dropdown.Item onClick={() => this.props.history.push(`/genre-list/Suspense`)} text='Suspense' />
+                            <Dropdown.Item onClick={() => this.props.history.push(`/genre-list/Thriller`)} text='Thriller' />
+                        </Dropdown.Menu>
+                    </Dropdown>
+                    &emsp;&emsp;
+                    <Dropdown text='Non-Fiction'>
+                        <Dropdown.Menu>
+                            <Dropdown.Item onClick={() => this.props.history.push(`/genre-list/Art`)} text='Art' />
+                            <Dropdown.Item onClick={() => this.props.history.push(`/genre-list/Autobiography`)} text='Autobiography' />
+                            <Dropdown.Item onClick={() => this.props.history.push(`/genre-list/Biography`)} text='Biography' />
+                            <Dropdown.Item onClick={() => this.props.history.push(`/genre-list/Book review`)} text='Book review' />
+                            <Dropdown.Item onClick={() => this.props.history.push(`/genre-list/Cookbook`)} text='Cookbook' />
+                            <Dropdown.Item onClick={() => this.props.history.push(`/genre-list/Diary`)} text='Diary' />
+                            <Dropdown.Item onClick={() => this.props.history.push(`/genre-list/Encyclopedia`)} text='Encyclopedia' />
+                            <Dropdown.Item onClick={() => this.props.history.push(`/genre-list/Guide`)} text='Guide' />
+                            <Dropdown.Item onClick={() => this.props.history.push(`/genre-list/Health`)} text='Health' />
+                            <Dropdown.Item onClick={() => this.props.history.push(`/genre-list/History`)} text='History' />
+                            <Dropdown.Item onClick={() => this.props.history.push(`/genre-list/Journal`)} text='Journal' />
+                            <Dropdown.Item onClick={() => this.props.history.push(`/genre-list/Math`)} text='Math' />
+                            <Dropdown.Item onClick={() => this.props.history.push(`/genre-list/Memoir`)} text='Memoir' />
+                            <Dropdown.Item onClick={() => this.props.history.push(`/genre-list/Religion, spirituality, and new age`)} text='Religion, spirituality, and new age' />
+                            <Dropdown.Item onClick={() => this.props.history.push(`/genre-list/Textbook`)} text='Textbook' />
+                            <Dropdown.Item onClick={() => this.props.history.push(`/genre-list/Review`)} text='Review' />
+                            <Dropdown.Item onClick={() => this.props.history.push(`/genre-list/Science`)} text='Science' />
+                            <Dropdown.Item onClick={() => this.props.history.push(`/genre-list/Self help`)} text='Self help' />
+                            <Dropdown.Item onClick={() => this.props.history.push(`/genre-list/Travel`)} text='Travel' />
+                        </Dropdown.Menu>
+                    </Dropdown>
+                    &emsp;&emsp;
+
+
+                </Segment>
+
 
 
                 {error && (

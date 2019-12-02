@@ -5,6 +5,11 @@ const apiURL = "/api"
 
 export const endpoint = `${localhost}${apiURL}`
 
+export const DateListURL = release_date => `${endpoint}/date-list/${release_date}/?release_date=${release_date}`
+export const SellerListURL = bestseller => `${endpoint}/seller-list/${bestseller}/?bestseller=${bestseller}`
+export const GenreListURL = genre => `${endpoint}/genre-list/${genre}/?genre=${genre}`
+export const TitleListURL = title => `${endpoint}/title-list/${title}/?title=${title}`
+export const PriceListURL = price => `${endpoint}/price-list/${price}/?price=${price}`
 export const userIDURL = `${endpoint}/user-id/`
 export const countryListURL = `${endpoint}/countries/`
 export const ProductListURL = pageNumber => `${endpoint}/products/?page=${pageNumber}`
